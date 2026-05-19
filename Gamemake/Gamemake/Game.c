@@ -1,4 +1,4 @@
-﻿#include <stdio.h>
+﻿vi#include <stdio.h>
 #include <string.h>
 #include <windows.h>
 #include <conio.h>
