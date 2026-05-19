@@ -2,6 +2,6 @@
 
 int main()
 {
-	printf("�ٺ�2");
+	printf("¹Ùº¸2");
 	return 0;
 }
