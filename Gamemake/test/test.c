@@ -369,6 +369,9 @@ int Manual(void)
             move_cursor(0, 50);
             printf("\033[1m이전장 (←)\033[0m");
 
+            move_cursor(103, 50);
+            printf("\033[1m나가기 (Backspace)\033[0m");
+
             move_cursor(60, 7);
             printf("\033[1m키 설명\033[0m");
             move_cursor(53, 12);
