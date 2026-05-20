@@ -2,6 +2,8 @@
 #include <string.h>
 #include <windows.h>
 #include <conio.h>
+#include <stdlib.h> // rand(), srand(), system() 함수용
+#include <time.h>   // time() 함수용
 
 #define COLOR_RESET "\x1b[0m"
 
@@ -24,6 +26,7 @@
 
 #define Backspace 8
 
+// 함수 원형 선언
 void set_color(int code);
 int move_cursor(int x, int y);
 void ShowLogo(void);
@@ -33,8 +36,31 @@ int Manual(void);
 int Gamestart(void);
 int Gameover(void);
 
+// 전역 변수 설정
 int menu = 1;
 int isRunning = 1;
+
+// 선택지 데이터를 담을 구조체 선언
+typedef struct
+{
+    const char* art[6]; // 아스키아트 (최대 6줄)
+    const char* text;   // 대사 한 줄
+    int min_damage;     // 최소 데미지 (추가됨)
+    int max_damage;     // 최대 데미지 (추가됨)
+} Choice;
+
+// 선택지 목록 (여기에 100개까지 계속 추가하시면 됩니다)
+Choice choices[] =
+{
+    { {"  /\\_/\\  ", " ( o.o ) ", "  > ^ <  ", "         ", "         ", "         "}, "귀여운 길고양이를 쓰다듬는다.", 1, 5 },
+    { {"   ___   ", "  / _ \\  ", " | (_) | ", "  \\___/  ", "         ", "         "}, "수상할 정도로 빨간 버튼을 누른다.", 3, 9 },
+    { {"  ====   ", " |    |  ", " |    |  ", "  ====   ", "         ", "         "}, "자판기 밑에서 동전을 줍는다.", 0, 2 },
+    { {"   \\|/   ", "  - O -  ", "   /|\\   ", "         ", "         ", "         "}, "태양을 맨눈으로 10초 동안 바라본다.", 8, 12 },
+    { {"  [___]  ", "  |   |  ", "  |___|  ", "         ", "         ", "         "}, "유통기한이 3년 지난 통조림을 먹는다.", 5, 15 }
+};
+
+// 등록된 선택지의 총 개수 계산
+int num_choices = sizeof(choices) / sizeof(Choice);
 
 void ShowLogo(void)
 {
@@ -45,10 +71,12 @@ void ShowLogo(void)
     int box_start_x = 37;
     int box_start_y = 5;
 
-    for (int i = 0; i < box_height; i++) {
+    for (int i = 0; i < box_height; i++)
+    {
         printf("\x1b[%d;%dH", box_start_y + i, box_start_x);
         printf("\x1b[44m");
-        for (int j = 0; j < box_width; j++) {
+        for (int j = 0; j < box_width; j++)
+        {
             printf(" ");
         }
         printf("\x1b[0m");
@@ -84,16 +112,21 @@ void ShowLogo(void)
     int logo_start_x = box_start_x + (box_width - logo_width) / 2;
     int logo_start_y = box_start_y + (box_height - logo_height) / 2;
 
-    for (int i = 0; i < logo_height; i++) {
+    for (int i = 0; i < logo_height; i++)
+    {
         printf("\x1b[%d;%dH", logo_start_y + i, logo_start_x);
-        for (int j = 0; j < logo_width; j++) {
-            if (logo[i][j] == 'W') {
+        for (int j = 0; j < logo_width; j++)
+        {
+            if (logo[i][j] == 'W')
+            {
                 printf("\x1b[47m ");
             }
-            else if (logo[i][j] == 'B' || logo[i][j] == 'X') {
+            else if (logo[i][j] == 'B' || logo[i][j] == 'X')
+            {
                 printf("\x1b[40m ");
             }
-            else {
+            else
+            {
                 printf("\x1b[44m ");
             }
         }
@@ -154,18 +187,16 @@ int RenderTitle(void)
     printf("  4. 게임 종료  ");
     set_color(BG_COLOR_BLACK);
 
-    char a = getch();
+    char a = _getch(); // 경고 방지를 위해 getch()를 _getch()로 변경
 
     switch (a)
     {
-    case 'w':
     case 72: // ↑
         if (menu > 1)
         {
             menu = menu - 1;
         }
         break;
-    case 's':
     case 80: // ↓
         if (menu < 4)
         {
@@ -225,10 +256,13 @@ int People(void)
     int title_start_x = box_start_x + (box_width - title_width) / 2;
     int title_start_y = box_start_y + (box_height - 11) / 2;
 
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < 5; i++)
+    {
         printf("\x1b[%d;%dH", title_start_y + i, title_start_x);
-        for (int j = 0; j < title_width; j++) {
-            if (title_text[i][j] == 'X') {
+        for (int j = 0; j < title_width; j++)
+        {
+            if (title_text[i][j] == 'X')
+            {
                 printf("\x1b[40m ");
             }
             else {
@@ -237,7 +271,8 @@ int People(void)
         }
         printf("\x1b[0m");
     }
-    const char* team_text[] = {
+    const char* team_text[] =
+    {
         " team 01 (ZERONE) 팀원들 ",
         "마준서(202617166) : 총괄",
         "백종화(202617139) : 코드",
@@ -248,7 +283,8 @@ int People(void)
     int team_start_x = box_start_x + (box_width - 24) / 2;
     int team_start_y = title_start_y + 5 + 1;
 
-    for (int i = 0; i < 5; i++) {
+    for (int i = 0; i < 5; i++)
+    {
         printf("\x1b[%d;%dH\x1b[30m\x1b[44m%s\x1b[0m", team_start_y + i, team_start_x, team_text[i]);
     }
 
@@ -284,8 +320,8 @@ int Manual(void)
         system("cls");
         if (Manual_page == 1)
         {
-            move_cursor(107, 50);
-            printf("\033[1m다음장 (→ , D)\033[0m");
+            move_cursor(111, 50);
+            printf("\033[1m다음장 (→)\033[0m");
 
             set_color(BG_COLOR_BRIGHTMAGENTA);
             set_color(FONT_COLOR_WHITE);
@@ -331,18 +367,18 @@ int Manual(void)
         if (Manual_page == 2)
         {
             move_cursor(0, 50);
-            printf("\033[1m이전장 (← , A)\033[0m");
+            printf("\033[1m이전장 (←)\033[0m");
 
             move_cursor(60, 7);
             printf("\033[1m키 설명\033[0m");
             move_cursor(53, 12);
-            printf("W , ↑: 위로 이동");
+            printf("↑: 위로 이동");
             move_cursor(53, 13);
-            printf("S , ↓: 밑으로 이동");
+            printf("↓: 밑으로 이동");
             move_cursor(53, 14);
-            printf("A , ←: 왼쪽 선택");
+            printf("←: 왼쪽 선택");
             move_cursor(53, 15);
-            printf("D , →: 오른쪽 선택");
+            printf("→: 오른쪽 선택");
             move_cursor(53, 16);
             printf("Enter : 선택");
             move_cursor(53, 17);
@@ -354,14 +390,12 @@ int Manual(void)
         key = _getch();
         switch (key)
         {
-        case 'a':
         case 75: // ←
             if (Manual_page > 1)
             {
                 Manual_page = Manual_page - 1;
             }
             break;
-        case 'd':
         case 77: // →
             if (Manual_page < 2)
             {
@@ -381,25 +415,134 @@ int Manual(void)
 
 int Gamestart(void)
 {
-    system("cls");
+    // 난수 시드 초기화 (게임 시작 시 한 번만)
+    srand((unsigned int)time(NULL));
 
-    move_cursor(52, 13);
-    printf("여기는 게임 시작. 메뉴로 돌아갈때 Backspace 누르기. 일단은 Backspace 누르고 나중에 키 지정하고 게임 여기에 만들기");
-
+    int hp = 100;    // 초기 HP
+    int score = 0;   // 초기 점수
     int key = 0;
 
-    while (key != 8)
+    // HP가 0보다 큰 동안 라운드 반복
+    while (hp > 0)
+    {
+        system("cls");
+
+        // 2개의 중복되지 않는 랜덤 선택지 뽑기
+        int left_idx = rand() % num_choices;
+        int right_idx;
+        do {
+            right_idx = rand() % num_choices;
+        } while (left_idx == right_idx);
+
+        // 상단 UI 출력 (HP, Score)
+        set_color(FONT_COLOR_RED);
+        move_cursor(40, 2);
+        printf("HP : %d", hp);
+
+        set_color(FONT_COLOR_WHITE);
+        move_cursor(70, 2);
+        printf("SCORE : %d", score);
+
+        // 중앙 VS 출력
+        set_color(FONT_COLOR_YELLOW);
+        move_cursor(58, 12);
+        printf("VS");
+        set_color(FONT_COLOR_WHITE);
+
+        // 왼쪽 선택지 출력
+        for (int i = 0; i < 6; i++) {
+            move_cursor(25, 8 + i);
+            printf("%s", choices[left_idx].art[i]);
+        }
+        move_cursor(15, 18);
+        printf("%s", choices[left_idx].text);
+
+        // 오른쪽 선택지 출력
+        for (int i = 0; i < 6; i++) {
+            move_cursor(80, 8 + i);
+            printf("%s", choices[right_idx].art[i]);
+        }
+        move_cursor(70, 18);
+        printf("%s", choices[right_idx].text);
+
+        // 안내 문구 출력
+        set_color(FONT_COLOR_GREEN);
+        move_cursor(35, 25);
+        printf("방향키(←, →)로 선택하세요. (메뉴로 가기: Backspace)");
+        set_color(FONT_COLOR_WHITE);
+
+        // 플레이어 입력 대기 및 선택 판별
+        int has_selected = 0;
+        int selected_idx = 0; // 유저가 최종적으로 고른 선택지의 인덱스
+
+        while (!has_selected)
+        {
+            key = _getch();
+
+            if (key == 224) // 방향키 확장 코드
+            {
+                key = _getch();
+                if (key == 75) // 왼쪽 (←)
+                {
+                    selected_idx = left_idx;
+                    has_selected = 1;
+                }
+                else if (key == 77) // 오른쪽 (→)
+                {
+                    selected_idx = right_idx;
+                    has_selected = 1;
+                }
+            }
+            else if (key == 8) // Backspace
+            {
+                return 0; // 메뉴로 돌아가기
+            }
+            else if (key == 27) // ESC
+            {
+                exit(0); // 게임 강제 종료
+            }
+        }
+
+        // 선택한 항목의 지정된 범위 안에서 데미지 계산
+        int min = choices[selected_idx].min_damage;
+        int max = choices[selected_idx].max_damage;
+
+        // rand() % (최대값 - 최소값 + 1) + 최소값 -> 지정된 범위 난수 공식
+        int damage = (rand() % (max - min + 1)) + min;
+
+        hp -= damage;
+        score += 10; // 라운드 통과 시 점수 증가
+
+        // 데미지 입은 결과 잠깐 보여주기
+        system("cls");
+        move_cursor(50, 12);
+        printf("선택 완료! HP가 %d 감소했습니다.", damage);
+        Sleep(1000);
+    }
+
+    // 게임 오버 처리
+    system("cls");
+    set_color(FONT_COLOR_RED);
+    move_cursor(54, 12);
+    printf("GAME OVER");
+
+    set_color(FONT_COLOR_WHITE);
+    move_cursor(50, 14);
+    printf("최종 버틴 점수 : %d", score);
+
+    move_cursor(43, 18);
+    printf("Backspace를 누르면 메뉴로 돌아갑니다.");
+
+    while (1)
     {
         key = _getch();
-
-        if (key == 27)
+        if (key == 8)
         {
-            exit(0);
+            break;
         }
     }
 
     system("cls");
-
     return 0;
 }
 
