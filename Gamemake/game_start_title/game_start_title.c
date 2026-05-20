@@ -1,25 +1,44 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
+#include <string.h>
+#include <windows.h>
+#include <stdlib.h> // system() 함수를 사용하기 위한 헤더
+
+void gotoxy(int x, int y) {
+    COORD pos = { (SHORT)x, (SHORT)y };
+    SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), pos);
+}
 
 int main(void) {
-    // ta.txt 파일을 읽기 모드("r")로 열기
-    FILE* fp = fopen("ta.txt", "r");
-    char buffer[1024]; // 한 줄을 읽어올 임시 저장 공간 (넉넉하게 1024바이트 설정)
+    // ★ 핵심 추가: 콘솔 창의 가로 글자 수를 210칸, 세로를 60칸으로 넉넉하게 강제 설정합니다.
+    // 이렇게 하면 텍스트가 오른쪽 끝에 부딪혀서 깨지는 현상을 막을 수 있습니다.
+    system("mode con cols=210 lines=60");
 
-    // 파일이 정상적으로 열렸는지 확인
+    FILE* fp = fopen("ta.txt", "r");
+    char buffer[1024];
+
+    // 시작 좌표 (X: 40, Y: 10)
+    int start_x = 40;
+    int current_y = 10;
+
     if (fp == NULL) {
         printf("오류: ta.txt 파일을 찾을 수 없습니다.\n");
-        printf("프로젝트 폴더 내에 파일이 있는지 확인해주세요.\n");
         return 1;
     }
 
-    // 파일의 끝(EOF)에 도달할 때까지 한 줄씩 읽어서 출력
     while (fgets(buffer, sizeof(buffer), fp) != NULL) {
+        // 엔터(\n, \r) 제거
+        buffer[strcspn(buffer, "\r\n")] = 0;
+
+        gotoxy(start_x, current_y);
         printf("%s", buffer);
+        current_y++;
     }
 
-    // 파일 닫기
     fclose(fp);
+
+    // 그림 밑으로 커서 이동시켜서 종료 메시지와 겹치지 않게 함
+    gotoxy(0, current_y + 2);
 
     return 0;
 }
