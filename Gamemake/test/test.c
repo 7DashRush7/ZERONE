@@ -638,7 +638,9 @@ int Gamestart(void)
 int Gameover(void)
 {
     int y = 30;
+    int yy = 30;
     int While = 1;
+    int Thile = 1;
 
     system("cls");
     while (While)
@@ -658,6 +660,27 @@ int Gameover(void)
             }
         }
         
+    }
+
+    while (Thile)
+    {
+        if (yy != 3)
+        {
+            system("cls");
+            move_cursor(42, y);
+            printf("여기에 마무리 되는거 추가로 넣고 꺼지게 하기");
+            move_cursor(42, yy);
+            printf("여기에 마무리 되는거 추가로 넣고 꺼지게 하기");
+            yy = yy--;
+
+            Sleep(100);
+
+            if (yy == 3)
+            {
+                Thile = 0;
+            }
+        }
+
     }
     
        
