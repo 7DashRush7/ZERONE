@@ -25,6 +25,7 @@
 #define BG_COLOR_WHITE 47
 
 #define Backspace 8
+#define r 114
 
 // 함수 원형 선언
 void set_color(int code);
@@ -510,8 +511,24 @@ int Gamestart(void)
             }
             else if (key == 8) // Backspace
             {
-                system("cls");
-                return 0; // 메뉴로 돌아가기
+                set_color(BG_COLOR_BLACK);
+                move_cursor(20, 7);
+                printf("                                                                                           \n                                                                                           \n                                                                                           \n                                                                                           \n                                                                                           \n                                                                                           \n                                                                                           \n");
+                set_color(FONT_COLOR_RED);
+                move_cursor(50, 12);
+                printf("게임을 중지하시겠습니까?");
+                move_cursor(46, 15);
+                printf("게임을 계속하려면 t, 중지하려면 r");
+
+                //if (key == 114) // r
+                //{
+                //    system("cls");
+                //    return 0;
+                //}
+                //if (key == 116) // t
+                //{
+                    
+                //}
             }
             else if (key == 27) // ESC
             {
@@ -614,6 +631,9 @@ int main(void)
         case 4:
             gameStatus = Gameover();
             break;
+        //case 5:
+        //    gameStatus = Backback();
+        //    break;
         }
 
     }
