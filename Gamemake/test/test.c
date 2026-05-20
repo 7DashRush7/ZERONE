@@ -510,6 +510,7 @@ int Gamestart(void)
             }
             else if (key == 8) // Backspace
             {
+                system("cls");
                 return 0; // 메뉴로 돌아가기
             }
             else if (key == 27) // ESC
