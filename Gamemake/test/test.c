@@ -517,6 +517,7 @@ int Gamestart(void)
                 exit(0); // 게임 강제 종료
             }
         }
+        
 
         // 선택한 항목의 지정된 범위 안에서 데미지 계산
         int min = choices[selected_idx].min_damage;
@@ -532,7 +533,7 @@ int Gamestart(void)
         system("cls");
         move_cursor(50, 12);
         printf("선택 완료! HP가 %d 감소했습니다.", damage);
-        Sleep(1000);
+        Sleep(2000);
     }
 
     // 게임 오버 처리
@@ -547,6 +548,8 @@ int Gamestart(void)
 
     move_cursor(43, 18);
     printf("Backspace를 누르면 메뉴로 돌아갑니다.");
+
+    
 
     while (1)
     {
