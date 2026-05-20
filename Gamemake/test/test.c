@@ -27,6 +27,10 @@
 #define Backspace 8
 #define r 114
 
+#define SCREEN_WIDTH 120  // 저장할 콘솔 화면의 가로 크기
+#define SCREEN_HEIGHT 30  // 저장할 콘솔 화면의 세로 크기
+
+
 // 함수 원형 선언
 void set_color(int code);
 int move_cursor(int x, int y);
@@ -62,6 +66,42 @@ Choice choices[] =          //밑에서 바로 아래 중괄호로 묶인거 선택지
 
 // 등록된 선택지의 총 개수 계산
 int num_choices = sizeof(choices) / sizeof(Choice);
+
+CHAR_INFO savedScreen[SCREEN_WIDTH * SCREEN_HEIGHT]; // 콘솔 화면 글자와 색 정보를 저장할 배열
+
+void save_console_screen() // 현재 콘솔 화면을 저장하는 함수
+{
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE); // 현재 콘솔 출력 화면의 핸들을 가져옴
+
+    COORD bufferSize = { SCREEN_WIDTH, SCREEN_HEIGHT }; // 저장할 버퍼의 크기를 지정
+    COORD bufferCoord = { 0, 0 }; // 버퍼의 시작 좌표를 왼쪽 위로 지정
+    SMALL_RECT readRegion = { 0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1 }; // 콘솔에서 읽어올 영역 지정
+
+    ReadConsoleOutput( // 콘솔 화면 내용을 savedScreen 배열에 저장
+        hConsole,      // 읽어올 콘솔 화면
+        savedScreen,   // 화면 내용을 저장할 배열
+        bufferSize,    // 저장할 배열의 크기
+        bufferCoord,   // 배열에서 저장을 시작할 위치
+        &readRegion    // 콘솔에서 읽어올 영역
+    );
+}
+
+void restore_console_screen() // 저장했던 콘솔 화면을 다시 복원하는 함수
+{
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE); // 현재 콘솔 출력 화면의 핸들을 가져옴
+
+    COORD bufferSize = { SCREEN_WIDTH, SCREEN_HEIGHT }; // 복원할 버퍼의 크기를 지정
+    COORD bufferCoord = { 0, 0 }; // 버퍼의 시작 좌표를 왼쪽 위로 지정
+    SMALL_RECT writeRegion = { 0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1 }; // 콘솔에 다시 쓸 영역 지정
+
+    WriteConsoleOutput( // savedScreen 배열에 저장된 화면 내용을 콘솔에 다시 출력
+        hConsole,       // 복원할 콘솔 화면
+        savedScreen,    // 저장되어 있던 화면 배열
+        bufferSize,     // 배열의 크기
+        bufferCoord,    // 배열에서 읽기 시작할 위치
+        &writeRegion    // 콘솔에 쓸 영역
+    );
+}
 
 void ShowLogo(void)
 {
@@ -514,9 +554,12 @@ int Gamestart(void)
 
             else if (key == 8) // Backspace
             {
+                save_console_screen(); // Backspace를 눌렀을 때, 확인창 띄우기 직전 화면 저장
+
                 
+
                 while (1)
-                {
+                {                
                     set_color(BG_COLOR_BLACK);
                     move_cursor(20, 7);
                     printf("                                                                                           \n                                                                                           \n                                                                                           \n                                                                                           \n                                                                                           \n                                                                                           \n                                                                                           \n");
@@ -533,11 +576,11 @@ int Gamestart(void)
                         system("cls");
                         return 0;
                     }
-                    /*if (key == 't')
+                    if (key == 't')
                     {
-                        
-                        break;
-                    }*/
+                        restore_console_screen(); // Backspace 누르기 직전에 저장한 화면을 복원
+                        break; // while문을 빠져나가고 게임을 계속 진행                        
+                    }
                 }
             }
             else if (key == 27) // ESC
