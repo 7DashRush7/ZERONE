@@ -483,7 +483,7 @@ int Gamestart(void)
     while (hp > 0)
     {
         system("cls");
-
+        
         // 2개의 중복되지 않는 랜덤 선택지 뽑기
         int left_idx = rand() % num_choices;
         int right_idx;
@@ -684,9 +684,6 @@ int main(void)
         case 4:
             gameStatus = Gameover();
             break;
-        //case 5:
-        //    gameStatus = Backback();
-        //    break;
         }
 
     }
