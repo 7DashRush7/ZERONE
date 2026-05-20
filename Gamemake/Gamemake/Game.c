@@ -1,7 +1,9 @@
-﻿vi#include <stdio.h>
+﻿#include <stdio.h>
 #include <string.h>
 #include <windows.h>
 #include <conio.h>
+
+//버그 확인
 
 #define COLOR_RESET "\x1b[0m"
 
