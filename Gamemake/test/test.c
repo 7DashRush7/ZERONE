@@ -496,7 +496,7 @@ int Gamestart(void)
         while (!has_selected)
         {
             key = _getch();
-
+            
             if (key == 224) // 방향키 확장 코드
             {
                 key = _getch();
@@ -511,6 +511,7 @@ int Gamestart(void)
                     has_selected = 1;
                 }
             }
+
             else if (key == 8) // Backspace
             {
                 
@@ -527,17 +528,16 @@ int Gamestart(void)
 
                     key = _getch();
 
-                    /*if (key == 114) // r
+                    if (key == 'r')
                     {
                         system("cls");
                         return 0;
-                        break;
                     }
-                    else if (key == 116) // t
+                    /*if (key == 't')
                     {
+                        
                         break;
-                    }
-                    */
+                    }*/
                 }
             }
             else if (key == 27) // ESC
