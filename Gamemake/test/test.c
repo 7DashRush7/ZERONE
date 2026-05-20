@@ -511,7 +511,7 @@ int Gamestart(void)
         int damage = (rand() % (max - min + 1)) + min;
 
         hp -= damage;
-        score += 10; // 라운드 통과 시 점수 증가
+        score += 1; // 라운드 통과 시 점수 증가
 
         // 데미지 입은 결과 잠깐 보여주기
         system("cls");
