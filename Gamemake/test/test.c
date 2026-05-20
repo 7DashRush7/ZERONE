@@ -187,6 +187,18 @@ int RenderTitle(void)
     printf("  4. 게임 종료  ");
     set_color(BG_COLOR_BLACK);
 
+    set_color(FONT_COLOR_YELLOW);
+    move_cursor(106, 27);
+    printf("↑: 위로 이동");
+    move_cursor(106, 28);
+    printf("↓: 밑으로 이동");
+    move_cursor(106, 29);
+    printf("Enter : 선택");
+    move_cursor(106, 30);
+    printf("ESC : 게임 종료");
+
+    move_cursor(106, 100);
+
     char a = _getch(); // 경고 방지를 위해 getch()를 _getch()로 변경
 
     switch (a)
