@@ -637,12 +637,32 @@ int Gamestart(void)
 
 int Gameover(void)
 {
+    int y = 30;
+    int While = 1;
+
     system("cls");
+    while (While)
+    {        
+        if (y != 1)
+        {
+            system("cls");
+            move_cursor(42, y);
+            printf("여기에 마무리 되는거 추가로 넣고 꺼지게 하기");
+            y = y--;
+            
+            Sleep(100);
+            
+            if (y == 1)
+            {
+                While = 0;
+            }
+        }
+        
+    }
+    
+       
 
-    move_cursor(52, 13);
-    printf("여기에 마무리 되는거 추가로 넣고 꺼지게 하기");
-
-    Sleep(2000);
+    Sleep(10000);
 
     exit(0);
 }
