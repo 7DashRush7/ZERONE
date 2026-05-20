@@ -144,6 +144,7 @@ void ShowLogo(void)
 
 int RenderTitle(void)
 {
+    
     set_color(BG_COLOR_BRIGHTMAGENTA);
     set_color(FONT_COLOR_WHITE);
 
@@ -490,6 +491,7 @@ int Gamestart(void)
         // 플레이어 입력 대기 및 선택 판별
         int has_selected = 0;
         int selected_idx = 0; // 유저가 최종적으로 고른 선택지의 인덱스
+        
 
         while (!has_selected)
         {
@@ -511,24 +513,32 @@ int Gamestart(void)
             }
             else if (key == 8) // Backspace
             {
-                set_color(BG_COLOR_BLACK);
-                move_cursor(20, 7);
-                printf("                                                                                           \n                                                                                           \n                                                                                           \n                                                                                           \n                                                                                           \n                                                                                           \n                                                                                           \n");
-                set_color(FONT_COLOR_RED);
-                move_cursor(50, 12);
-                printf("게임을 중지하시겠습니까?");
-                move_cursor(46, 15);
-                printf("게임을 계속하려면 t, 중지하려면 r");
+                
+                while (1)
+                {
+                    set_color(BG_COLOR_BLACK);
+                    move_cursor(20, 7);
+                    printf("                                                                                           \n                                                                                           \n                                                                                           \n                                                                                           \n                                                                                           \n                                                                                           \n                                                                                           \n");
+                    set_color(FONT_COLOR_RED);
+                    move_cursor(50, 12);
+                    printf("게임을 중지하시겠습니까?");
+                    move_cursor(40, 15);
+                    printf("게임을 계속하려면 t, 중지하려면 r를 누르시오.");
 
-                //if (key == 114) // r
-                //{
-                //    system("cls");
-                //    return 0;
-                //}
-                //if (key == 116) // t
-                //{
-                    
-                //}
+                    key = _getch();
+
+                    /*if (key == 114) // r
+                    {
+                        system("cls");
+                        return 0;
+                        break;
+                    }
+                    else if (key == 116) // t
+                    {
+                        break;
+                    }
+                    */
+                }
             }
             else if (key == 27) // ESC
             {
