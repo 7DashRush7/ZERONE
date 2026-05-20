@@ -25,7 +25,7 @@
 #define BG_COLOR_WHITE 47
 
 #define Backspace 8
-#define r 114
+
 
 #define SCREEN_WIDTH 120  // 저장할 콘솔 화면의 가로 크기
 #define SCREEN_HEIGHT 30  // 저장할 콘솔 화면의 세로 크기
