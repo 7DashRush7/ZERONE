@@ -70,7 +70,8 @@ Choice choices[] =
     { {"  [___]  ", "  |   |  ", "  |___|  ", "         ", "         ", "         "}, "유통기한이 3년 지난 통조림을 먹는다.", 5, 15 },
 
     // 구조체 변경 없이, 텍스트 안에 '%d'가 포함되어 있으면 프로그램이 이를 n층 변수로 자동 인식하여 처리합니다.
-    { {"  _||_   ", " |    |  ", " |    |  ", " |    |  ", " |____|  ", "         "}, "%d층에서 떨어졌다.", 2, 10 }
+    { {"  _||_   ", " |    |  ", " |    |  ", " |    |  ", " |____|  ", "         "}, "%d층에서 떨어졌다.", 2, 10 },
+    { { "                                                  " }, "%d의 속도로 달리는 차에 치인다.", 20, 50 }
 };
 
 // 위에서 선언한 선택지 배열의 전체 크기를 개별 구조체의 크기로 나누어, 총 선택지의 개수를 계산
@@ -795,7 +796,13 @@ int Gamestart(void)
         int damage = 0;
 
         // 만약 고른 선택지의 텍스트 안에 '%d' 가 들어있다면 (n층에서 떨어졌다 등)
-        if (strstr(choices[selected_idx].text, "%d") != NULL) {
+        if (strstr(choices[selected_idx].text, "%d") != NULL)
+        {
+            if (strstr(choices[selected_idx].text, "속도") != NULL)
+            {
+                int n = (selected_idx == left_idx) ? left_n : right_n;
+                damage = n * 2;
+            }
             // 유저가 고른 쪽의 뽑아두었던 n값(층수)을 가져옴
             int n = (selected_idx == left_idx) ? left_n : right_n;
             damage = n * 4; // n의 값에 비례하여 데미지 계산 (예: 1층당 HP 4씩 감소)
