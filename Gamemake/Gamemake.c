@@ -190,14 +190,18 @@ void ShowLogo(void)
     
     move_cursor(logo_start_x + 2, logo_start_y + logo_height + 1);
     set_color(FONT_COLOR_WHITE);
-    printf("전체화면으로 바꾼 뒤 아무 키나 누르면 시작합니다.");
+    printf("전체화면으로 바꾼 뒤 Enter키를 누르면 시작합니다.");
     
 
-    _getch();
+    int key;
+
+    do {
+        key = _getch();
+    } while (key != '\r');
 
     system("cls");
 
-    return;
+    return 0;
 }
 
 int RenderTitle(void)
