@@ -26,6 +26,11 @@
 
 #define Backspace 8
 
+
+#define SCREEN_WIDTH 120  // 저장할 콘솔 화면의 가로 크기
+#define SCREEN_HEIGHT 30  // 저장할 콘솔 화면의 세로 크기
+
+
 // 함수 원형 선언
 void set_color(int code);
 int move_cursor(int x, int y);
@@ -49,18 +54,60 @@ typedef struct
     int max_damage;     // 최대 데미지 (추가됨)
 } Choice;
 
+
+//이거 아래에 문장있고 그 뒤에 데미지 최솟값 최댓값이 있는데 저거 저런식으로말고 'n층에서 떨어졌다'로 하고 n을 변수도 두변서 n의 값에 따라 데미지를 받는 방식으로 하게 바꾸자
+
+
 // 선택지 목록 (여기에 100개까지 계속 추가하시면 됩니다)
-Choice choices[] =
+Choice choices[] =          //밑에서 바로 아래 중괄호로 묶인거 선택지
 {
-    { {"  /\\_/\\  ", " ( o.o ) ", "  > ^ <  ", "         ", "         ", "         "}, "귀여운 길고양이를 쓰다듬는다.", 1, 5 },
+    { {"  /\\_/\\  ", " ( o.o ) ", "  > ^ <  ", "         ", "         ", "         "}, "귀여운 길고양이를 쓰다듬는다.", 1, 5 },//아스키아트(엔터할거면 "하고 쉼표), 밑에 선택지 말, 최소값 최댓값
     { {"   ___   ", "  / _ \\  ", " | (_) | ", "  \\___/  ", "         ", "         "}, "수상할 정도로 빨간 버튼을 누른다.", 3, 9 },
     { {"  ====   ", " |    |  ", " |    |  ", "  ====   ", "         ", "         "}, "자판기 밑에서 동전을 줍는다.", 0, 2 },
     { {"   \\|/   ", "  - O -  ", "   /|\\   ", "         ", "         ", "         "}, "태양을 맨눈으로 10초 동안 바라본다.", 8, 12 },
     { {"  [___]  ", "  |   |  ", "  |___|  ", "         ", "         ", "         "}, "유통기한이 3년 지난 통조림을 먹는다.", 5, 15 }
 };
 
+
+
 // 등록된 선택지의 총 개수 계산
 int num_choices = sizeof(choices) / sizeof(Choice);
+
+CHAR_INFO savedScreen[SCREEN_WIDTH * SCREEN_HEIGHT]; // 콘솔 화면 글자와 색 정보를 저장할 배열
+
+void save_console_screen() // 현재 콘솔 화면을 저장하는 함수
+{
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE); // 현재 콘솔 출력 화면의 핸들을 가져옴
+
+    COORD bufferSize = { SCREEN_WIDTH, SCREEN_HEIGHT }; // 저장할 버퍼의 크기를 지정
+    COORD bufferCoord = { 0, 0 }; // 버퍼의 시작 좌표를 왼쪽 위로 지정
+    SMALL_RECT readRegion = { 0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1 }; // 콘솔에서 읽어올 영역 지정
+
+    ReadConsoleOutput( // 콘솔 화면 내용을 savedScreen 배열에 저장
+        hConsole,      // 읽어올 콘솔 화면
+        savedScreen,   // 화면 내용을 저장할 배열
+        bufferSize,    // 저장할 배열의 크기
+        bufferCoord,   // 배열에서 저장을 시작할 위치
+        &readRegion    // 콘솔에서 읽어올 영역
+    );
+}
+
+void restore_console_screen() // 저장했던 콘솔 화면을 다시 복원하는 함수
+{
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE); // 현재 콘솔 출력 화면의 핸들을 가져옴
+
+    COORD bufferSize = { SCREEN_WIDTH, SCREEN_HEIGHT }; // 복원할 버퍼의 크기를 지정
+    COORD bufferCoord = { 0, 0 }; // 버퍼의 시작 좌표를 왼쪽 위로 지정
+    SMALL_RECT writeRegion = { 0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1 }; // 콘솔에 다시 쓸 영역 지정
+
+    WriteConsoleOutput( // savedScreen 배열에 저장된 화면 내용을 콘솔에 다시 출력
+        hConsole,       // 복원할 콘솔 화면
+        savedScreen,    // 저장되어 있던 화면 배열
+        bufferSize,     // 배열의 크기
+        bufferCoord,    // 배열에서 읽기 시작할 위치
+        &writeRegion    // 콘솔에 쓸 영역
+    );
+}
 
 void ShowLogo(void)
 {
@@ -143,6 +190,7 @@ void ShowLogo(void)
 
 int RenderTitle(void)
 {
+
     set_color(BG_COLOR_BRIGHTMAGENTA);
     set_color(FONT_COLOR_WHITE);
 
@@ -187,6 +235,18 @@ int RenderTitle(void)
     printf("  4. 게임 종료  ");
     set_color(BG_COLOR_BLACK);
 
+    set_color(FONT_COLOR_YELLOW);
+    move_cursor(106, 27);
+    printf("↑: 위로 이동");
+    move_cursor(106, 28);
+    printf("↓: 밑으로 이동");
+    move_cursor(106, 29);
+    printf("Enter : 선택");
+    move_cursor(106, 30);
+    printf("ESC : 게임 종료");
+
+    move_cursor(106, 100);
+
     char a = _getch(); // 경고 방지를 위해 getch()를 _getch()로 변경
 
     switch (a)
@@ -229,6 +289,7 @@ int People(void)
 
     int box_width = 50;
     int box_height = 30;
+
     int box_start_x = 40;
     int box_start_y = 5;
 
@@ -249,6 +310,7 @@ int People(void)
        " X     X      X  X   X   X  X  XX  X    ",
        "XXXXX  XXXXX  X   X  XXXXX  X   X  XXXXX"
     };
+
 
     int title_width = (int)strlen(title_text[0]);
     int title_start_x = box_start_x + (box_width - title_width) / 2;
@@ -367,6 +429,9 @@ int Manual(void)
             move_cursor(0, 50);
             printf("\033[1m이전장 (←)\033[0m");
 
+            move_cursor(103, 50);
+            printf("\033[1m나가기 (Backspace)\033[0m");
+
             move_cursor(60, 7);
             printf("\033[1m키 설명\033[0m");
             move_cursor(53, 12);
@@ -428,8 +493,7 @@ int Gamestart(void)
         // 2개의 중복되지 않는 랜덤 선택지 뽑기
         int left_idx = rand() % num_choices;
         int right_idx;
-        do
-        {
+        do {
             right_idx = rand() % num_choices;
         } while (left_idx == right_idx);
 
@@ -474,6 +538,7 @@ int Gamestart(void)
         int has_selected = 0;
         int selected_idx = 0; // 유저가 최종적으로 고른 선택지의 인덱스
 
+
         while (!has_selected)
         {
             key = _getch();
@@ -492,17 +557,44 @@ int Gamestart(void)
                     has_selected = 1;
                 }
             }
+
             else if (key == 8) // Backspace
             {
-                system("cls");
-                return 0; // 메뉴로 돌아가기
-            }
+                save_console_screen(); // Backspace를 눌렀을 때, 확인창 띄우기 직전 화면 저장
 
+
+
+                while (1)
+                {
+                    set_color(BG_COLOR_BLACK);
+                    move_cursor(20, 7);
+                    printf("                                                                                           \n                                                                                           \n                                                                                           \n                                                                                           \n                                                                                           \n                                                                                           \n                                                                                           \n");
+                    set_color(FONT_COLOR_RED);
+                    move_cursor(50, 12);
+                    printf("게임을 중지하시겠습니까?");
+                    move_cursor(40, 15);
+                    printf("게임을 계속하려면 t, 중지하려면 r를 누르시오.");
+
+                    key = _getch();
+
+                    if (key == 'r')
+                    {
+                        system("cls");
+                        return 0;
+                    }
+                    if (key == 't')
+                    {
+                        restore_console_screen(); // Backspace 누르기 직전에 저장한 화면을 복원
+                        break; // while문을 빠져나가고 게임을 계속 진행                        
+                    }
+                }
+            }
             else if (key == 27) // ESC
             {
                 exit(0); // 게임 강제 종료
             }
         }
+
 
         // 선택한 항목의 지정된 범위 안에서 데미지 계산
         int min = choices[selected_idx].min_damage;
@@ -518,7 +610,7 @@ int Gamestart(void)
         system("cls");
         move_cursor(50, 12);
         printf("선택 완료! HP가 %d 감소했습니다.", damage);
-        Sleep(1000);
+        Sleep(2000);
     }
 
     // 게임 오버 처리
@@ -534,18 +626,72 @@ int Gamestart(void)
     move_cursor(43, 18);
     printf("Backspace를 누르면 메뉴로 돌아갑니다.");
 
+
+
+    while (1)
+    {
+        key = _getch();
+        if (key == 8)
+        {
+            break;
+        }
+    }
+
     system("cls");
     return 0;
 }
 
 int Gameover(void)
 {
+    int y = 30;
+    int yy = 30;
+    int While = 1;
+    int Thile = 1;
+
     system("cls");
+    while (While)
+    {
+        if (y != 1)
+        {
+            system("cls");
+            move_cursor(42, y);
+            printf("여기에 마무리 되는거 추가로 넣고 꺼지게 하기");
+            y = y--;
 
-    move_cursor(52, 13);
-    printf("여기에 마무리 되는거 추가로 넣고 꺼지게 하기");
+            Sleep(100);
 
-    Sleep(2000);
+            if (y == 1)
+            {
+                While = 0;
+            }
+        }
+
+    }
+
+    while (Thile)
+    {
+        if (yy != 3)
+        {
+            system("cls");
+            move_cursor(42, y);
+            printf("여기에 마무리 되는거 추가로 넣고 꺼지게 하기");
+            move_cursor(42, yy);
+            printf("여기에 마무리 되는거 추가로 넣고 꺼지게 하기");
+            yy = yy--;
+
+            Sleep(100);
+
+            if (yy == 3)
+            {
+                Thile = 0;
+            }
+        }
+
+    }
+
+
+
+    Sleep(10000);
 
     exit(0);
 }
@@ -563,7 +709,6 @@ int move_cursor(int x, int y)
 
 int main(void)
 {
-
     int gameStatus = 0;
 
     ShowLogo();
