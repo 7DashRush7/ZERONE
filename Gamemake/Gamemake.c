@@ -34,6 +34,7 @@
 // 함수 원형 선언
 void set_color(int code);
 int move_cursor(int x, int y);
+void gotoxy(int x, int y);
 void ShowLogo(void);
 int RenderTitle(void);
 int People(void);
@@ -494,6 +495,49 @@ int Manual(void)
 
 int Gamestart(void)
 {
+    // ============================================================
+    // ★ 추가된 오프닝 (ta.txt 파일 출력) 연출 시작 부분 ★
+    // ============================================================
+    system("mode con cols=210 lines=60"); // 텍스트가 깨지지 않게 콘솔 크기를 넉넉히 변경
+    system("cls");
+
+    FILE* fp = fopen("ta.txt", "r");
+    char buffer[1024];
+    int start_x = 40;
+    int current_y = 10;
+
+    if (fp != NULL) {
+        while (fgets(buffer, sizeof(buffer), fp) != NULL) {
+            // 엔터(\n, \r) 제거
+            buffer[strcspn(buffer, "\r\n")] = 0;
+
+            gotoxy(start_x, current_y);
+            printf("%s", buffer);
+            current_y++;
+        }
+        fclose(fp);
+
+        // 그림 밑으로 커서 이동시켜서 안내 메시지 출력
+        gotoxy(start_x, current_y + 2);
+        printf("아무 키나 누르면 게임이 시작됩니다...");
+        _getch(); // 유저가 확인할 때까지 대기
+    }
+    else {
+        gotoxy(start_x, current_y);
+        printf("오류: ta.txt 파일을 찾을 수 없습니다.\n");
+        Sleep(2000);
+    }
+
+    // 원래 게임 UI(SCREEN_WIDTH=120, SCREEN_HEIGHT=30)가 
+    // 정상적으로 작동하도록 다시 콘솔 크기를 복구합니다.
+    system("mode con cols=120 lines=30");
+    system("cls");
+    // ============================================================
+    // ★ 추가된 오프닝 (ta.txt 파일 출력) 연출 끝 부분 ★
+    // ============================================================
+
+    
+
     // 난수 시드 초기화 (게임 시작 시 한 번만)
     srand((unsigned int)time(NULL));
 
