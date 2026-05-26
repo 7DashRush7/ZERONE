@@ -796,7 +796,7 @@ int Gamestart(void)
         int damage = 0;
 
         // 만약 고른 선택지의 텍스트 안에 '%d' 가 들어있다면 (n층에서 떨어졌다 등)
-        if (strstr(choices[selected_idx].text, "층") != NULL)
+        if (strstr(choices[selected_idx].text, "%d층에서") != NULL)
         {
             // 유저가 고른 쪽의 뽑아두었던 n값(층수)을 가져옴
             int n = (selected_idx == left_idx) ? left_n : right_n;
