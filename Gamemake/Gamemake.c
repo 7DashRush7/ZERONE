@@ -796,13 +796,13 @@ int Gamestart(void)
         int damage = 0;
 
         // 만약 고른 선택지의 텍스트 안에 '%d' 가 들어있다면 (n층에서 떨어졌다 등)
-        if (strstr(choices[selected_idx].text, "%d층에서") != NULL)
+        if (strstr(choices[selected_idx].text, "층에서 떨어졌다") != NULL)
         {
             // 유저가 고른 쪽의 뽑아두었던 n값(층수)을 가져옴
             int n = (selected_idx == left_idx) ? left_n : right_n;
             damage = n * 4; // n의 값에 비례하여 데미지 계산 (예: 1층당 HP 4씩 감소)
         }
-        if (strstr(choices[selected_idx].text, "속도") != NULL)
+        else if (strstr(choices[selected_idx].text, "속도") != NULL)
         {
             int n = (selected_idx == left_idx) ? left_n : right_n;
             damage = n * 2;
