@@ -13,7 +13,7 @@
 // 콘솔 텍스트 폰트(글자) 및 배경 색상을 지정하기 위한 ANSI 색상 코드 매크로 정의
 #define FONT_COLOR_BLACK 30
 #define BG_COLOR_BLACK 40
-#define FONT_COLOR_RED 31
+#define FONT_COLOR_RED 316
 #define BG_COLOR_RED 41
 #define FONT_COLOR_GREEN 32
 #define BG_COLOR_GREEN 42
