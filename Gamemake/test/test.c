@@ -272,7 +272,7 @@ int RenderTitle(void)
         get_content_stats(title_lines[i], &prefix, &content_w); // 줄의 공백과 크기를 다시 추출합니다.
         int target_x = (SCREEN_WIDTH - max_content_width) / 2 - prefix; // 120칸 가로 화면 기준 한가운데 정렬되도록 오프셋 수학 연산을 수행합니다.
         if (target_x < 1) target_x = 1; // 연산 결과가 화면 왼쪽 바깥으로 튕겨나가지 않도록 최소 한계를 1칸으로 가둡니다.
-        move_cursor(target_x, title_start_y + i); // 완벽한 좌우 중앙 정렬 계산 결과 좌표 위치로 커서를 옮겨 놓습니다.
+        move_cursor(target_x + 65 , title_start_y + i + 14); // 완벽한 좌우 중앙 정렬 계산 결과 좌표 위치로 커서를 옮겨 놓습니다.
         printf("%s", title_lines[i]); // 마침내 정렬된 자리에 메인 아트 문구를 화면에 출력합니다.
     }
 
@@ -280,31 +280,31 @@ int RenderTitle(void)
     int base_x = (SCREEN_WIDTH - max_content_width) / 2 + 6; // 메뉴 글자들도 타이틀 정렬선에 맞춰 보기 좋게 들여쓰기 가로 시작점을 잡습니다.
 
     // 1번 메뉴 항목을 그립니다. 현재 menu 변수가 1이면 노란색 강조 화살표를 달아주고, 아니면 그냥 흰색 기본으로 그립니다.
-    move_cursor(base_x, base_y);
+    move_cursor(base_x + 75, base_y + 14);
     if (menu == 1) { set_color(FONT_COLOR_YELLOW); printf("▶ 1. 만든 사람 및 팀 소개"); }
     else { set_color(FONT_COLOR_WHITE);           printf("   1. 만든 사람 및 팀 소개"); }
 
     // 2번 설명서 메뉴 항목을 상황에 맞춰 스캔 출력합니다.
-    move_cursor(base_x, base_y + 2);
+    move_cursor(base_x + 75, base_y + 16);
     if (menu == 2) { set_color(FONT_COLOR_YELLOW); printf("▶ 2. 설명서"); }
     else { set_color(FONT_COLOR_WHITE);           printf("   2. 설명서"); }
 
     // 3번 게임 시작 메뉴 항목을 상황에 맞춰 스캔 출력합니다.
-    move_cursor(base_x, base_y + 4);
+    move_cursor(base_x + 75, base_y + 18);
     if (menu == 3) { set_color(FONT_COLOR_YELLOW); printf("▶ 3. 게임 시작"); }
     else { set_color(FONT_COLOR_WHITE);           printf("   3. 게임 시작"); }
 
     // 4번 게임 종료 메뉴 항목을 상황에 맞춰 스캔 출력합니다.
-    move_cursor(base_x, base_y + 6);
+    move_cursor(base_x + 75, base_y + 20);
     if (menu == 4) { set_color(FONT_COLOR_YELLOW); printf("▶ 4. 게임 종료"); }
     else { set_color(FONT_COLOR_WHITE);           printf("   4. 게임 종료"); }
 
     // 화면 우측 하단 구석지에 노란색 가이드 글씨로 조작법 숏컷 안내 자막을 띄웁니다.
     set_color(FONT_COLOR_YELLOW);
-    move_cursor(102, 24); printf("↑: 위로 이동");
-    move_cursor(102, 25); printf("↓: 밑으로 이동");
-    move_cursor(102, 26); printf("Enter : 선택");
-    move_cursor(102, 27); printf("ESC : 게임 종료");
+    move_cursor(190, 45); printf("↑: 위로 이동");
+    move_cursor(190, 46); printf("↓: 밑으로 이동");
+    move_cursor(190, 47); printf("Enter : 선택");
+    move_cursor(190, 48); printf("ESC : 게임 종료");
 
     move_cursor(106, 100); // 텍스트를 다 그려서 깜빡거리는 하얀 커서를 화면 밖 멀리 던져서 안 보이게 대피시킵니다.
 
@@ -343,7 +343,7 @@ void print_member_page(const char* filename, const char* description) {
             int visual_len = calculate_visual_length(buffer); // 한글과 영어가 혼합된 현재 줄 문장의 정확한 화면 실측 폭을 측정합니다.
             int x = (SCREEN_WIDTH - visual_len) / 2; // 전체 화면 폭 120칸 기준 정확히 센터 가로 정렬을 위한 좌표 값을 수식으로 도출합니다.
             if (x < 1) x = 1; // 연산된 좌표가 왼쪽 벽을 뚫고 버그가 나지 않도록 바운더리를 제한합니다.
-            move_cursor(x, y++); // 계산 완료된 가로 중앙 좌표 x와 한 칸씩 증가되는 세로 y 위치로 커서를 옮깁니다.
+            move_cursor(x + 45, y++); // 계산 완료된 가로 중앙 좌표 x와 한 칸씩 증가되는 세로 y 위치로 커서를 옮깁니다.
             printf("%s", buffer); // 마침내 정교하게 정렬된 자리에 팀원 개별 아스키아트 아트를 한 줄 출력합니다.
         }
         fclose(file); // 개별 그림 로드가 무사히 종료되었으므로 오픈했던 텍스트 파일 리소스를 안전하게 닫아줍니다.
@@ -354,16 +354,16 @@ void print_member_page(const char* filename, const char* description) {
     }
 
     // 아스키아트 아래 하단 고정 스펙 영역 레이아웃 가이드를 드로우합니다.
-    move_cursor((SCREEN_WIDTH - 50) / 2, 38); // 하단 영역 데코레이션 가로선 줄 위치를 정중앙으로 잡습니다.
+    move_cursor((SCREEN_WIDTH + 38) / 2, 38); // 하단 영역 데코레이션 가로선 줄 위치를 정중앙으로 잡습니다.
     printf("==================================================");
-    move_cursor((SCREEN_WIDTH - calculate_visual_length(description)) / 2, 39); // 팀원 직책 학번 이름 정보를 중앙으로 정렬해 출력합니다.
+    move_cursor((SCREEN_WIDTH - calculate_visual_length(description)) / 1 , 39); // 팀원 직책 학번 이름 정보를 중앙으로 정렬해 출력합니다.
     printf("%s", description);
-    move_cursor((SCREEN_WIDTH - 50) / 2, 40); // 닫는 데코레이션 가로 구분선 줄을 정중앙 정렬해 출력합니다.
+    move_cursor((SCREEN_WIDTH + 38) / 2, 40); // 닫는 데코레이션 가로 구분선 줄을 정중앙 정렬해 출력합니다.
     printf("==================================================");
 
     // 유저가 페이지를 제어할 수 있도록 돕는 UI 가이드 네비게이션 메시지를 중앙 정렬로 노출합니다.
     const char* nav_str = "[ <- 이전 페이지 ]        [ Backspace 메뉴로 돌아가기 ]        [ 다음 페이지 -> ]";
-    move_cursor((SCREEN_WIDTH - calculate_visual_length(nav_str)) / 2, 42); // 안내 가이드 한 줄을 가로 기준 정중앙 정렬 좌표로 기동합니다.
+    move_cursor((SCREEN_WIDTH + calculate_visual_length(nav_str)) / 3 , 42); // 안내 가이드 한 줄을 가로 기준 정중앙 정렬 좌표로 기동합니다.
     printf("%s", nav_str); // 조작 내비 바 텍스트를 출력합니다.
 }
 
@@ -373,11 +373,11 @@ void draw_final_screen(void) {
 
     int box_width = 60;  // 크레딧을 감쌀 배경 상자의 가로 폭 크기를 설정합니다.
     int box_height = 30; // 크레딧을 감쌀 배경 상자의 세로 줄 높이를 설정합니다.
-    int box_start_x = (SCREEN_WIDTH - box_width) / 2; // 전체 콘솔 창 120칸 기준 한가운데 정확히 박스가 오도록 가로 시작 좌표를 연산합니다.
-    int box_start_y = 3; // 천장 아래 3번째 세로 줄을 시작선으로 잡습니다.
+    int box_start_x = (SCREEN_WIDTH - box_width) / 1; // 전체 콘솔 창 120칸 기준 한가운데 정확히 박스가 오도록 가로 시작 좌표를 연산합니다.
+    int box_start_y = 1; // 천장 아래 3번째 세로 줄을 시작선으로 잡습니다.
 
     for (int i = 0; i < box_height; i++) { // 계산한 상자 세로 범위만큼 한 줄씩 도강하며 렌더합니다.
-        printf("\x1b[%d;%dH\x1b[44m", box_start_y + i, box_start_x); // 커서를 상자 시작 위치로 보내고 배경색을 파란색(44)으로 마킹합니다.
+        printf("\x1b[%d;%dH\x1b[44m", box_start_y + i + 6, box_start_x + 15); // 커서를 상자 시작 위치로 보내고 배경색을 파란색(44)으로 마킹합니다.
         for (int j = 0; j < box_width; j++) { printf(" "); } // 상자 가로 면적만큼 스페이스바를 쏘아 파란 가득 채운 사각형 면을 만듭니다.
         printf("\x1b[0m"); // 채색 렌더링이 끝나면 색상 마스킹 설정을 초기화합니다.
     }
@@ -392,8 +392,8 @@ void draw_final_screen(void) {
     };
 
     int title_width = (int)strlen(title_text[0]); // ZERONE 픽셀 자막의 가로 글자 길이를 뽑아옵니다.
-    int title_start_x = box_start_x + (box_width - title_width) / 2; // 파란 박스 가로 폭 내부에서 다시 정확히 정중앙에 오도록 내부 마진을 연산합니다.
-    int title_start_y = box_start_y + 10; // 파란 박스 상단 모서리로부터 10칸 아래를 타이틀 찍기 시작선으로 잡습니다.
+    int title_start_x = box_start_x + 16 + (box_width - title_width) / 2; // 파란 박스 가로 폭 내부에서 다시 정확히 정중앙에 오도록 내부 마진을 연산합니다.
+    int title_start_y = box_start_y + 15; // 파란 박스 상단 모서리로부터 10칸 아래를 타이틀 찍기 시작선으로 잡습니다.
 
     for (int i = 0; i < 5; i++) { // 5줄짜리 자막 그래픽 루프를 돌려줍니다.
         printf("\x1b[%d;%dH", title_start_y + i, title_start_x); // 매 줄의 출력 정렬 좌표 위치로 실시간 커서 이동을 처리합니다.
@@ -416,14 +416,14 @@ void draw_final_screen(void) {
     int team_start_y = title_start_y + 7; // ZERONE 픽셀 타이틀 그래픽 출력 완료선 아래로 7칸 밑을 명단 띄우기 세로 시작 위치로 지정합니다.
     for (int i = 0; i < 5; i++) { // 명단 수만큼 반복 주행합니다.
         int text_vis_len = calculate_visual_length(team_text[i]); // 명단 텍스트가 화면에서 차지하는 가로 길이를 각각 계측합니다.
-        int team_line_x = box_start_x + (box_width - text_vis_len) / 2; // 파란 박스 내부 안에서 각각 가로 정중앙 라인 정렬선에 결속되게 좌표를 뽑습니다.
+        int team_line_x = box_start_x + 15 + (box_width - text_vis_len) / 2; // 파란 박스 내부 안에서 각각 가로 정중앙 라인 정렬선에 결속되게 좌표를 뽑습니다.
         printf("\x1b[%d;%dH\x1b[30m\x1b[44m%s\x1b[0m", team_start_y + i, team_line_x, team_text[i]); // 파란 배경(44) 위에 가독성을 확보한 검은색 폰트(30)로 스태프 명단을 찍습니다.
     }
 
     // 박스 레이아웃 설계 밖 아래쪽 마진 빈 곳에 최종 내비게이션 바 안내를 하단 정중앙에 배치합니다.
     const char* final_nav = "[ <- 이전 페이지 ]        [ Backspace 메뉴로 돌아가기 ]        [ ESC 종료 ]";
     int final_nav_x = (SCREEN_WIDTH - calculate_visual_length(final_nav)) / 2; // 전체 스크린 기준 센터 좌표값을 수학 연산합니다.
-    move_cursor(final_nav_x, box_start_y + box_height + 2); // 하단 빈 여백선 줄로 최종 이동 기동을 명령합니다.
+    move_cursor(final_nav_x + 45, box_start_y + 9 + box_height + 2); // 하단 빈 여백선 줄로 최종 이동 기동을 명령합니다.
     set_color(FONT_COLOR_WHITE); // 조작 가이드 안내용 폰트색을 깨끗한 흰색으로 바꿉니다.
     printf("%s", final_nav); // 최종 종합 크레딧창 안내 가이드 라인을 출력 완료합니다.
 }
@@ -433,10 +433,10 @@ int People(void)
 {
     const char* filenames[] = { "1.txt", "2.txt", "3.txt", "4.txt" }; // 개별로 읽어 들일 팀원 4명의 텍스트 파일명 배열 데이터셋입니다.
     const char* descriptions[] = { // 각 팀원의 아스키아트 하단에 찍어줄 정보 매칭 설명 문자열 모음 배열입니다.
-        "마준서(202617166) : 총괄",
-        "백종화(202617139) : 코드",
-        "이인욱(202619389) : 코드",
-        "이준현(202619549) : 디자인"
+        "마준서(202617166) : 총괄   ",
+        "백종화(202617139) : 코드   ",
+        "이인욱(202619389) : 코드   ",
+        "이준현(202619549) : 디자인  "
     };
 
     int current_page = 0; // 유저가 가장 먼저 마주하게 될 스타트 페이지 넘버 인덱스입니다. (0번 = 1페이지)

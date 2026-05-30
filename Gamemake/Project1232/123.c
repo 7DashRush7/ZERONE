@@ -179,23 +179,23 @@ void ShowLogo(void)
        "  WWWWWW                                             ",
        " WWW   WWWBB                                         ",
        " WWW   WWWBB                                         ",
-       " WWW   WWWBB     XXXXXX  XXXXX  XXXXX                   ",
-       "  WWWWWWWBB          X   X   X  X                      ",
-       "   BBBBB            X    XXXXX  XXXXX                   ",
-       "                   X     X   X  X                      ",
-       "                 XXXXXX  X   X  XXXXX                  ",
+       " WWW   WWWBB  XXXXXX  XXXXX  XXXXX                   ",
+       "  WWWWWWWBB        X   X   X  X                      ",
+       "   BBBBB         X    XXXXX  XXXXX                   ",
+       "                 X     X   X  X                      ",
+       "               XXXXXX  X   X  XXXXX                  ",
        "                                                     ",
-       "                   XXX   X   X  XXXXX                   ",
-       "                  X   X  XX  X  X                       ",
-       "                  X   X  X X X  XXXXX                   ",
-       "                  X   X  X  XX  X                       ",
-       "                   XXX   X   X  XXXXX       WWW           ",
-       "                                          WWWWWBB       ",
-       "                                          WW WWBB       ",
-       "                                             WWBB        ",
-       "                                             WWBB        ",
-       "                                          WWWWWWWWBB    ",
-       "                                           BBBBBB       "
+       "                XXX   X   X  XXXXX                   ",
+       "               X   X  XX  X  X                       ",
+       "               X   X  X X X  XXXXX                   ",
+       "               X   X  X  XX  X                       ",
+       "                XXX   X   X  XXXXX       WWW           ",
+       "                                       WWWWWBB       ",
+       "                                       WW WWBB       ",
+       "                                         WWBB        ",
+       "                                         WWBB        ",
+       "                                       WWWWWWWWBB    ",
+       "                                        BBBBBB       "
     };
 
     int logo_height = 21; // 픽셀 아트 이미지의 세로 라인 수입니다.
@@ -227,7 +227,7 @@ void ShowLogo(void)
 
     printf("\x1b[%d;1H\n", box_start_y + box_height + 1); // 로고 그리기가 끝났으니 커서를 파란 상자 바깥쪽 하단 빈칸으로 격리합니다.
 
-    move_cursor(logo_start_x + 2, logo_start_y + logo_height + 1); // 안내 문구를 출력하기 위해 적절한 위치로 커서를 옮깁니다.
+    move_cursor(logo_start_x + 3, logo_start_y + logo_height + 2); // 안내 문구를 출력하기 위해 적절한 위치로 커서를 옮깁니다.
     set_color(FONT_COLOR_WHITE); // 안내문 글자색을 흰색으로 변경합니다.
     printf("전체화면으로 바꾼 뒤 Enter키를 누르면 시작합니다."); // 콘솔 안내 멘트를 노출합니다.
 
@@ -239,74 +239,139 @@ void ShowLogo(void)
     system("cls"); // 엔터가 눌려 루프를 나가면 화면을 전부 밀어내어 깨끗이 지웁니다.
 }
 
-// 메인 타이틀 디자인 파일을 읽어와 한가운데 정렬하고, 화살표식 메뉴 선택 인터페이스를 구현하는 핵심 타이틀 함수입니다.
+// [새로운 헬퍼 함수] 분석 중인 글자가 단순 스페이스나 점자 공백(U+2800) 같은 투명 문자인지 판별합니다.
+int is_visual_blank(const char* str, int* char_len, int* vis_len) {
+    if (str[0] == ' ' || str[0] == '\t' || str[0] == '\r' || str[0] == '\n') {
+        *char_len = 1; *vis_len = 1;
+        return 1; // 일반 공백 문자는 참(1)을 리턴합니다.
+    }
+    // UTF-8 환경에서 점자 공백(U+2800)의 고유 바이트 배열 조합인 E2 A0 80을 감지합니다.
+    if ((unsigned char)str[0] == 0xE2 && (unsigned char)str[0 + 1] == 0xA0 && (unsigned char)str[0 + 2] == 0x80) {
+        *char_len = 3; *vis_len = 2; // 점자 공백은 3바이트를 차지하며 모니터 화면에서는 2칸의 폭을 가집니다.
+        return 1; // 점자 공백도 투명 빈칸이므로 참(1)을 리턴합니다.
+    }
+    // 공백이 아닌 실제 알맹이 그림 문자를 만났을 때 각각의 바이트 크기와 화면 실측 칸수를 설정합니다.
+    if ((unsigned char)str[0] <= 0x7F) { *char_len = 1; *vis_len = 1; }
+    else if ((unsigned char)str[0] >= 0xC0 && (unsigned char)str[0] <= 0xDF) { *char_len = 2; *vis_len = 2; }
+    else if ((unsigned char)str[0] >= 0xE0 && (unsigned char)str[0] <= 0xEF) { *char_len = 3; *vis_len = 2; }
+    else { *char_len = 4; *vis_len = 2; }
+    return 0; // 내용물이 있는 진짜 그림 문자이므로 거짓(0)을 리턴합니다.
+}
+
+// [완벽 수정] 깨짐 현상을 100% 차단하고 전체화면의 물리적 십자가 교차점에 타이틀과 메뉴를 정확히 배치합니다.
 int RenderTitle(void)
 {
     static char title_lines[40][256]; // 파일에서 읽어온 대형 메인 타이틀 아트를 저장해 둘 2차원 배열 메모리 슬롯입니다.
     static int title_line_count = 0;  // 불러온 타이틀 아트의 전체 세로 줄 수를 기억할 변수입니다.
-    static int max_content_width = 0; // 불러온 타이틀 아트 중에서 가장 가로 폭이 긴 줄의 폭 크기입니다.
-    static int title_loaded = 0;      // 파일을 이미 읽었는지 체크하여 중복 로딩을 막아주는 안전장치 변수입니다.
+    static int title_loaded = 0;      // 파일 중복 로딩을 막아주는 안전장치 변수입니다.
 
-    if (!title_loaded) { // 프로그램을 켜고 타이틀을 한 번도 불러온 적이 없다면 중괄호 안이 동작합니다.
-        FILE* f = fopen("dlrjfwnrsp.txt", "r"); // 외부 폴더에 있는 타이틀 텍스트 파일("이걸죽네" 초성 파일)을 읽기 모드로 엽니다.
-        if (f != NULL) { // 파일이 에러 없이 무사히 성공적으로 열렸다면 작동합니다.
-            char temp[1024]; // 한 줄 내용을 임시로 받아 적을 버퍼 가방입니다.
-            while (fgets(temp, sizeof(temp), f) && title_line_count < 40) { // 파일 끝까지 혹은 최대 40줄까지 한 줄씩 읽어 들입니다.
-                temp[strcspn(temp, "\r\n")] = 0; // 읽어온 글자 맨 끝의 불필요한 줄바꿈(\r, \n) 엔터 표시를 잘라내 지웁니다.
-                int prefix = 0, content_w = 0; // 해당 줄의 앞 공백과 순수 아트를 판독할 변수입니다.
-                get_content_stats(temp, &prefix, &content_w); // 줄 폭을 정밀 분석기에 집어넣어 크기를 잽니다.
-                if (content_w > 0) { // 빈 줄이 아닌 무언가 그려진 진짜 유효한 라인이라면 실행합니다.
-                    if (content_w > max_content_width) max_content_width = content_w; // 찾은 크기 중 가장 넓은 가로 폭을 최댓값으로 갱신해 나갑니다.
-                    strcpy(title_lines[title_line_count++], temp); // 임시 보관한 줄 내용을 영구 배열 공간에 복사해 담고 줄 수를 카운트합니다.
-                }
+    static int global_min_left = 9999; // 파일 전체 줄을 통틀어 진짜 그림 알맹이가 시작되는 최좌측 시각적 위치 좌표입니다.
+    static int global_max_right = 0;   // 파일 전체 줄을 통틀어 진짜 그림 알맹이가 끝나는 최우측 시각적 위치 좌표입니다.
+
+    // Windows API를 사용하여 현재 전체화면 상태인 콘솔창의 실제 실시간 가로/세로 글자 칸수를 측정합니다.
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    int screen_w = 120; // 실패 대비용 기본 가로 크기 세팅입니다.
+    int screen_h = 30;  // 실패 대비용 기본 세로 크기 세팅입니다.
+
+    if (GetConsoleScreenBufferInfo(hConsole, &csbi)) {
+        screen_w = csbi.srWindow.Right - csbi.srWindow.Left + 1;  // 모니터 전체화면의 진짜 가로 총 폭(칸수)을 계산합니다.
+        screen_h = csbi.srWindow.Bottom - csbi.srWindow.Top + 1; // 모니터 전체화면의 진짜 세로 총 높이(줄수)를 계산합니다.
+    }
+
+    if (!title_loaded) { // 첫 실행 시 딱 한 번만 외부 텍스트 파일을 분석하여 메모리에 올립니다.
+        FILE* f = fopen("dlrjfwnrsp.txt", "r");
+        if (f != NULL) {
+            char temp[1024];
+            while (fgets(temp, sizeof(temp), f) && title_line_count < 40) {
+                temp[strcspn(temp, "\r\n")] = 0; // 줄바꿈 문자 제거
+                strcpy(title_lines[title_line_count++], temp);
             }
-            fclose(f); // 파일 분석 및 메모리 복사가 완료되었으므로 열었던 텍스트 파일을 안전하게 닫아줍니다.
+            fclose(f);
         }
-        title_loaded = 1; // 다음 루프 실행 시에는 이 긴 파일 로드 과정을 건너뛰도록 로딩 완료 도장을 찍습니다.
+
+        // [바운딩 박스 핵심 연산] 파일 내의 모든 가짜 투명 공백을 걸러내고 '진짜 텍스트 아트의 알맹이 너비'만 도려냅니다.
+        for (int i = 0; i < title_line_count; i++) {
+            int current_visual = 0;
+            int j = 0;
+            while (title_lines[i][j] != '\0') {
+                int char_len = 1, vis_len = 1;
+                int is_blank = is_visual_blank(&title_lines[i][j], &char_len, &vis_len);
+
+                if (!is_blank) { // 공백이 아닌 실제 픽셀 문자를 발견했을 때 실행됩니다.
+                    if (current_visual < global_min_left) {
+                        global_min_left = current_visual; // 가장 먼저 시작하는 왼쪽 경계선을 갱신합니다.
+                    }
+                    if (current_visual + vis_len > global_max_right) {
+                        global_max_right = current_visual + vis_len; // 가장 마지막에 끝나는 오른쪽 경계선을 갱신합니다.
+                    }
+                }
+                current_visual += vis_len;
+                j += char_len;
+            }
+        }
+        // 예외 처리: 만약 텍스트 파일이 완전히 비어있다면 기본 크기로 채워 강제 다운을 막습니다.
+        if (global_max_right == 0) { global_min_left = 0; global_max_right = 60; }
+        title_loaded = 1;
     }
 
-    set_color(FONT_COLOR_WHITE); // 타이틀 그래픽 폰트의 글씨 색상을 깔끔한 흰색으로 설정합니다.
-    int title_start_y = 2; // 화면 맨 위 천장에서부터 2칸 아래를 시작 높이로 지정합니다.
-    for (int i = 0; i < title_line_count; i++) { // 파일에서 복사해둔 타이틀 줄 수만큼 화면에 드로우하기 위해 반복합니다.
-        int prefix = 0, content_w = 0; // 현재 그릴 줄의 폭 정보를 저장할 변수입니다.
-        get_content_stats(title_lines[i], &prefix, &content_w); // 줄의 공백과 크기를 다시 추출합니다.
-        int target_x = (SCREEN_WIDTH - max_content_width) / 2 - prefix; // 120칸 가로 화면 기준 한가운데 정렬되도록 오프셋 수학 연산을 수행합니다.
-        if (target_x < 1) target_x = 1; // 연산 결과가 화면 왼쪽 바깥으로 튕겨나가지 않도록 최소 한계를 1칸으로 가둡니다.
-        move_cursor(target_x, title_start_y + i); // 완벽한 좌우 중앙 정렬 계산 결과 좌표 위치로 커서를 옮겨 놓습니다.
-        printf("%s", title_lines[i]); // 마침내 정렬된 자리에 메인 아트 문구를 화면에 출력합니다.
+    // 순수하게 글자가 박혀있는 영역의 알맹이 가로 폭 길이를 공식으로 도출합니다.
+    int logo_visual_width = global_max_right - global_min_left;
+
+    // [중앙 배치 공식] 타이틀 로고 + 메뉴판 항목 전체가 완전히 묶여서 화면 한가운데 오도록 세로 총높이를 계산합니다.
+    int total_layout_height = title_line_count + 2 + 7; // 로고 줄수 + 여백 2줄 + 메뉴판이 차지하는 7줄의 높이입니다.
+    int start_y = (screen_h - total_layout_height) / 2; // 전체화면 높이 기준 완벽한 상하 대칭 정점 Y 좌표입니다.
+    if (start_y < 1) start_y = 1;
+
+    // [로고 깨짐 방지 핵심 고정 좌표] 모든 줄의 출력 시작점을 '동일한 X 좌표 값'으로 영구 고정시켜 텍스트가 좌우로 찢어지며 뒤틀리는 현상을 원천 차단합니다.
+    int logo_start_x = (screen_w - logo_visual_width) / 2; // 전체화면 너비 기준 완벽한 좌우 대칭 정점 X 좌표입니다.
+    int target_x = logo_start_x - global_min_left;         // 문자열의 원본 여백 마진까지 계산에 통일 반영한 최종 고정 시작점입니다.
+    if (target_x < 1) target_x = 1;
+
+    set_color(FONT_COLOR_WHITE); // 타이틀 글씨 색상을 흰색으로 설정합니다.
+    for (int i = 0; i < title_line_count; i++) {
+        move_cursor(target_x, start_y + i); // 정밀 고정된 X 좌표와 순차 하강하는 Y 좌표로 이동합니다.
+        printf("%s", title_lines[i]);       // 이제 로고가 십자가 정중앙에 한 치의 뒤틀림 없이 원본 그대로 정렬되어 사출됩니다.
     }
 
-    int base_y = title_start_y + title_line_count + 2; // 타이틀 아트 그래픽이 모두 끝난 지점 아래쪽 2칸 밑을 메뉴 시작 높이로 잡습니다.
-    int base_x = (SCREEN_WIDTH - max_content_width) / 2 + 6; // 메뉴 글자들도 타이틀 정렬선에 맞춰 보기 좋게 들여쓰기 가로 시작점을 잡습니다.
+    // [메뉴 선택창 중앙 배치] 메뉴 항목 중 가장 긴 문장 너비(약 26칸)를 기준으로 삼아 십자가 한가운데 정중앙 수직선에 일치시킵니다.
+    int menu_base_y = start_y + title_line_count + 2; // 로고가 끝난 자리에서 정확히 2칸 아래를 시작선으로 잡습니다.
+    int menu_base_x = (screen_w - 26) / 2;            // 메뉴 텍스트 전체 블록이 화면 가로의 정확한 센터 중심선에 물리도록 연산합니다.
 
-    // 1번 메뉴 항목을 그립니다. 현재 menu 변수가 1이면 노란색 강조 화살표를 달아주고, 아니면 그냥 흰색 기본으로 그립니다.
-    move_cursor(base_x, base_y);
+    // 1번 메뉴 항목을 정중앙에 그립니다.
+    move_cursor(menu_base_x, menu_base_y);
     if (menu == 1) { set_color(FONT_COLOR_YELLOW); printf("▶ 1. 만든 사람 및 팀 소개"); }
     else { set_color(FONT_COLOR_WHITE);           printf("   1. 만든 사람 및 팀 소개"); }
 
-    // 2번 설명서 메뉴 항목을 상황에 맞춰 스캔 출력합니다.
-    move_cursor(base_x, base_y + 2);
+    // 2번 메뉴 항목을 정중앙에 그립니다.
+    move_cursor(menu_base_x, menu_base_y + 2);
     if (menu == 2) { set_color(FONT_COLOR_YELLOW); printf("▶ 2. 설명서"); }
     else { set_color(FONT_COLOR_WHITE);           printf("   2. 설명서"); }
 
-    // 3번 게임 시작 메뉴 항목을 상황에 맞춰 스캔 출력합니다.
-    move_cursor(base_x, base_y + 4);
+    // 3번 메뉴 항목을 정중앙에 그립니다.
+    move_cursor(menu_base_x, menu_base_y + 4);
     if (menu == 3) { set_color(FONT_COLOR_YELLOW); printf("▶ 3. 게임 시작"); }
     else { set_color(FONT_COLOR_WHITE);           printf("   3. 게임 시작"); }
 
-    // 4번 게임 종료 메뉴 항목을 상황에 맞춰 스캔 출력합니다.
-    move_cursor(base_x, base_y + 6);
+    // 4번 메뉴 항목을 정중앙에 그립니다.
+    move_cursor(menu_base_x, menu_base_y + 6);
     if (menu == 4) { set_color(FONT_COLOR_YELLOW); printf("▶ 4. 게임 종료"); }
     else { set_color(FONT_COLOR_WHITE);           printf("   4. 게임 종료"); }
 
-    // 화면 우측 하단 구석지에 노란색 가이드 글씨로 조작법 숏컷 안내 자막을 띄웁니다.
-    set_color(FONT_COLOR_YELLOW);
-    move_cursor(102, 24); printf("↑: 위로 이동");
-    move_cursor(102, 25); printf("↓: 밑으로 이동");
-    move_cursor(102, 26); printf("Enter : 선택");
-    move_cursor(102, 27); printf("ESC : 게임 종료");
+    // [우측 최하단 구석 배치 고정] 모니터 크기나 전체화면 해상도 변경에 구애받지 않고 무조건 우하단 꼭짓점 구석에 박아버립니다.
+    int guide_x = screen_w - 20; // 오른쪽 맨 끝 벽면으로부터 왼쪽 안 방향으로 딱 20칸 여백을 확보합니다.
+    int guide_y = screen_h - 5;  // 맨 아래 바닥 벽면으로부터 위쪽 하늘 방향으로 딱 5줄 여백을 확보합니다.
+    if (guide_x < 1) guide_x = 1;
+    if (guide_y < 1) guide_y = 1;
 
-    move_cursor(106, 100); // 텍스트를 다 그려서 깜빡거리는 하얀 커서를 화면 밖 멀리 던져서 안 보이게 대피시킵니다.
+    set_color(FONT_COLOR_YELLOW);
+    move_cursor(guide_x, guide_y);     printf("↑: 위로 이동");
+    move_cursor(guide_x, guide_y + 1); printf("↓: 밑으로 이동");
+    move_cursor(guide_x, guide_y + 2); printf("Enter : 선택");
+    move_cursor(guide_x, guide_y + 3); printf("ESC : 게임 종료");
+
+    // 깜빡거리며 몰입을 방해하는 윈도우 기본 텍스트 입력 포커스 커서를 전체화면 스크린 맨 우측 아래 보이지 않는 끝단지로 격리 대피시킵니다.
+    move_cursor(screen_w - 2, screen_h - 1);
 
     char a = _getch(); // 유저가 조작 키를 입력할 때까지 대기하며 키 값을 한 바이트 읽어옵니다.
 
@@ -456,12 +521,12 @@ int People(void)
         if (ch == 224 || ch == 0) { // 방향키 같은 특수 기능 확장 키들이 입력되었을 때 들어오는 리딩 접두사 조건 판정 블록입니다.
             ch = _getch(); // 접두사 뒤에 연속해서 붙어 유입되는 진짜 방향키 고유 식별 코드를 한 번 더 수령 가공합니다.
 
-            if (ch == 75) { // 왼쪽 화살표(←) 방향키를 클릭했을 경우 작동되는 로직입니다.
+            if (ch == 75) { // ① 왼쪽 화살표(←) 방향키를 클릭했을 경우 작동되는 로직입니다.
                 if (current_page > 0) {
                     current_page--; // 가장 첫 페이지가 아닐 때에 한해서 현재 보고 있는 페이지 번호를 뒤로 한 칸 후퇴 이동시킵니다.
                 }
             }
-            else if (ch == 77) { // 오른쪽 화살표(→) 방향키를 클릭했을 경우 작동되는 로직입니다.
+            else if (ch == 77) { // ② 오른쪽 화살표(→) 방향키를 클릭했을 경우 작동되는 로직입니다.
                 if (current_page < total_pages - 1) {
                     current_page++; // 맨 마지막 종합 페이지가 아닐 때에 한해서 보고 있는 페이지 번호를 한 단계 앞으로 전진 이동시킵니다.
                 }
@@ -680,7 +745,7 @@ int Gamestart(void)
                     if (key == 't') // 다시 마음을 다잡고 재개 복귀를 원하여 컴퓨터 자판 't' 소문자 버튼을 클릭 접수한 전개 재개 조건식 성립 상황입니다.
                     {
                         restore_console_screen(); // 팝업창 띄우기 비상 직전 가상 버퍼 배열 메모리에 한 치 오차 없이 완벽 백업 보존해두었던 원래 인게임 갈림길 라운드 화면 그래픽 스크린 상태를 그대로 복사해 와 콘솔창 위에 한순간에 원형 복구 복원 덮어버립니다.
-                        break; // 일시정지 서스펜드 전용 로컬 무한 루프창을 완전히 깨부수고 탈출하여 기존의 라운드 생존 결단 대기 홀딩 상태 스레드로 유연하게 복귀 컴백합니다.
+                        break; // 일시정지 서스펜드 전용 로컬 무한 루프창을 완전히 깨부수고 탈출하여 기존의 라운드 생존 결단 대기 HOLDING 상태 스레드로 유연하게 복귀 컴백합니다.
                     }
                 }
             }
@@ -723,7 +788,7 @@ int Gamestart(void)
 
     while (1) // 유저가 결과를 겸허히 수용하고 인증 도장을 찍는 의미로 백스페이스 확인 버튼을 누를 때까지 화면을 고정 동결해 가두는 마감 무한 대기 루프창입니다.
     {
-        key = _getch(); // 키보드 확인 타격 인터랙션 무브먼트를 홀딩 가로채기 수령합니다.
+        key = _getch(); // 키보드 확인 타격 인터랙션 무브먼트를 HOLDING 가로채기 수령합니다.
         if (key == 8) // 입력 확인 접수한 자판 고유 주소가 뒤로가기 버튼인 '백스페이스 키' 임이 정확히 매칭 검증 판독된 수용 상황입니다.
         {
             break; // 화면 고정용 마감 무한 대기 루프 쇠사슬을 완전히 깨부수고 탈출 스위치를 올립니다.
@@ -780,7 +845,7 @@ int Gameover(void)
         }
     }
 
-    Sleep(10000); // 마침내 두 줄의 웅장한 피날레 작별 서사 크레딧 자막 문장이 완벽 입체 배치 완료된 감동의 최종 정지 스크린 상태를 유저가 흐뭇하게 음미하고 읽어내려갈 수 있도록 모니터 화면 작동 상태를 무려 10초(10000ms) 동안 강제 홀딩 동결 유지 감상하게 만듭니다.
+    Sleep(10000); // 마침내 두 줄의 웅장한 피날레 작별 서사 크레딧 자막 문장이 완벽 입체 배치 완료된 감동의 최종 정지 스크린 상태를 유저가 흐뭇하게 음미하고 읽어내려갈 수 있도록 모니터 화면 작동 상태를 무려 10초(10000ms) 동안 강제 HOLDING 동결 유지 감상하게 만듭니다.
 
     exit(0); // 10초간의 긴 여운과 작별 식순이 전면 완전히 종료되었으므로, C 표준 라이브러리 시스템 최고 핵심 명령을 하달하여 구동 중이던 콘솔창 게임 프로그램 프로세스 자원 자체를 운영체제 메모리에서 통째로 전면 강제 클로즈 즉각 완전 종료 폐쇄 아웃시킵니다.
 }
@@ -808,9 +873,9 @@ int main(void)
 {
     printf("\x1b[2J\x1b[?1049h"); // 프로그램 시동과 동시에 가로 120 세로 30 터미널 스크린 내벽을 완전히 전면 소독 클리어(`2J`)하는 동시에, 게임용 전용 독립 가상 공간 대체 버퍼 스크린 모드 기동 신호(`?1049h`)를 시스템에 전격 강제 주입 주하 개시합니다.
     SetConsoleOutputCP(CP_UTF8);  // 마이크로소프트 윈도우 OS 콘솔 환경 터미널 시스템이 유니코드 UTF-8 코드페이지 문자셋을 강제 표준 규격으로 고정 락을 걸어 복잡한 한글 자막 문장이나 팀원 아스키아트 파일 내부 한글 특수문자 그래픽 데이터가 절대 일말도 허투루 깨지거나 뭉개지지 않도록 강제 인코딩 수입 주입 조치를 취합니다.
-    atexit(cleanup_console);      // 유저가 어떠한 돌발 돌발 비상 경로를 거쳐 프로그램 X 종료 창을 누르거나 강제 탈출 아웃 종료되더라도, 메모리 프로세스가 완전히 공중 분해되어 나가떨어지기 직전 사후 안전 조치로 위의 `cleanup_console` 함수가 시스템 내부에서 강제로 사후 자동 강제 트리거 호출 작동하도록 운영체제 사후 예약을 완벽하게 조치 선행 등록해 둡니다.
+    atexit(cleanup_console);      // 유저가 어떠한 돌발 돌발 비상 경로를 거쳐 프로그램 X 종료 창을 누르거나 강제 탈출 아웃 종료되더라도, 메모리 프로세스가 완전히 공중 분해되어 나가떨어지기 직전 사후 안전 조치로 위의 `cleanup_console` 함수가 시스템 내부에서 강제로 사후 자동 강제 트리거 호출 작동하도록 운영체제 사후 Reservations를 완벽하게 조치 선행 등록해 둡니다.
 
-    int gameStatus = 0; // 프로그램 내부가 메인 타이틀 상태인지, 인게임 생존 상태인지, 설명서 보기 상태인지 전체 컴포넌트의 진행 화면 분기 상황 상태를 중앙 관리 제어하는 핵심 네비게이션 제어 코드 번호 변수입니다. (초기 구동값 0번 = 메인 타이틀 메뉴 화면 상태 부여)
+    int gameStatus = 0; // 프로그램 내부가 메인 타이틀 상태인지, 인게임 생존 상태인지, 설명서 보기 상태인지 전체 컴포넌트의 진행 화면 분기 상황 상태를 중앙 관리 제어하는 핵심 네비게이션 제어 코드 번호 변수입니다. (초기구동값 0번 = 메인 타이틀 메뉴 화면 상태 부여)
 
     ShowLogo(); // 프로그램 메인 엔진 가동 휠이 돌기 직전, 단 한 번 웅장하고 아름다운 파란색 박스 제로원 제작사 인트로 픽셀 로고와 전체화면 전환 권고 안내 가이딩 멘트 화면 모듈을 스크린에 전격 노출 집행합니다.
 
