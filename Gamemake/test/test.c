@@ -50,16 +50,17 @@ int calculate_visual_length(const char* str);             // 영어, 한글, 특수문�
 void get_content_stats(const char* str, int* visual_prefix, int* visual_content); // 아스키아트의 순수 그림 폭과 앞 공백 크기를 계산합니다.
 
 // 게임 전체에서 공유하며 사용할 전역 변수들입니다.
-int menu = 1;       // 메인 화면에서 현재 화살표가 가리키고 있는 메뉴의 번호입니다. (기본값 1번)
-int isRunning = 1;  // 이 값이 1인 동안은 프로그램이 계속 켜져 있고, 0이 되면 프로그램이 완전히 꺼집니다.
+int menu = 1;                   // 메인 화면에서 현재 화살표가 가리키고 있는 메뉴의 번호입니다. (기본값 1번)
+int isRunning = 1;              // 이 값이 1인 동안은 프로그램이 계속 켜져 있고, 0이 되면 프로그램이 완전히 꺼집니다.
+char playerName[50] = "Player"; // [복구] 플레이어의 이름을 실시간 보관하고 UI에 매핑할 닉네임 전역 변수입니다.
 
 // 게임 중 매 라운드마다 무작위로 나올 '선택지 정보'를 하나로 묶어둔 구조체 양식입니다.
 typedef struct
 {
     const char* art[6]; // 선택지 위에 그려질 아스키아트 그림 데이터입니다. (최대 6줄까지 저장)
     const char* text;   // 선택지에 대한 설명 글자입니다. ("귀여운 길고양이를 쓰다듬는다" 등)
-    int min_damage;     // 이 행동을 골랐을 때 최소한으로 받는 피해 체력량입니다.
-    int max_damage;     // 이 행동을 골랐을 때 최대한으로 받는 피해 체력량입니다.
+    int min_damage;     // 이 행동을 골랐을 때 최소한으로 받는 피해 체력량입니다. (음수면 회복)
+    int max_damage;     // 이 행동을 골랐을 때 최대한으로 받는 피해 체력량입니다. (음수면 회복)
 } Choice;
 
 // 게임에 등장하게 될 기상천외한 선택지들의 실제 데이터들을 모아놓은 배열입니다.
@@ -71,7 +72,11 @@ Choice choices[] =
     { {"   \\|/   ", "  - O -  ", "   /|\\   ", "         ", "         ", "         "}, "태양을 맨눈으로 10초 동안 바라본다.", 8, 12 },
     { {"  [___]  ", "  |   |  ", "  |___|  ", "         ", "         ", "         "}, "유통기한이 3년 지난 통조림을 먹는다.", 5, 15 },
     { {"  _||_   ", " |    |  ", " |    |  ", " |    |  ", " |____|  ", "         "}, "%d층에서 떨어졌다.", 2, 10 },
-    { { "                                                     " }, "%d의 속도로 달리는 차에 치인다.", 20, 50 }
+    { { "                                                  " }, "%d의 속도로 달리는 차에 치인다.", 20, 50 },
+    // [복구] 두 번째 코드에서 누락되었던 체력 회복(HP+) 및 휴식 관련 선택지 데이터셋 3종입니다.
+    { { "   +++   ", "  +HP+  ", "   +++   ", "         ", "         ", "         " }, "약국에서 진통제를 복용한다.", -15, -10 },
+    { { "  [###]  ", "  |   |  ", "  |___|  ", "         ", "         ", "         " }, "편의점에서 이온음료를 마신다.", -8, -3 },
+    { { "  Zzz..  ", "  (-_-)  ", "  /| |\\  ", "         ", "         ", "         " }, "잠깐 앉아서 휴식을 취한다.", -8, -4 }
 };
 
 int num_choices = sizeof(choices) / sizeof(Choice); // 위 배열에 등록된 선택지가 총 몇 개인지 개수를 계산해 저장합니다.
@@ -94,7 +99,7 @@ void restore_console_screen()
     COORD bufferSize = { SCREEN_WIDTH, SCREEN_HEIGHT }; // 복원할 데이터의 규격 크기를 매칭합니다.
     COORD bufferCoord = { 0, 0 }; // 백업 배열의 첫 칸부터 읽어오겠다는 뜻입니다.
     SMALL_RECT writeRegion = { 0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1 }; // 화면을 다시 덮어쓸 대상을 콘솔창 전체로 지정합니다.
-    WriteConsoleOutput(hConsole, savedScreen, bufferSize, bufferCoord, &writeRegion); // 저장해둔 화면을 그대로 복사해서 화면을 복구합니다.
+    WriteConsoleOutput(hConsole, savedScreen, bufferSize, bufferCoord, &writeRegion); // 저장해둔 화면을 그대로 copy해서 화면을 복구합니다.
 }
 
 // 윈도우 시스템 제어 명령을 사용해 원하는 X(가로), Y(세로) 좌표로 텍스트 출력 커서를 바로 순간이동 시킵니다.
@@ -105,7 +110,7 @@ void gotoxy(int x, int y) {
 
 // 한글(2칸), 영어/숫자/공백(1칸)이 마구 섞여 있는 문자열이 모니터 화면에서 총 몇 칸의 가로 길이를 차지하는지 정확히 계산합니다.
 int calculate_visual_length(const char* str) {
-    int len = 0; // 화면에 나타날 실제 글자 폭 폭을 누적할 변수입니다.
+    int len = 0; // 화면에 나타날 실제 글자 폭을 누적할 변수입니다.
     for (int i = 0; str[i] != '\0'; ) { // 글자 문자열이 완전히 끝날 때까지 한 글자씩 검사합니다.
         if ((str[i] & 0x80) == 0) { i += 1; len += 1; } // 아스키 문자(영어, 숫자, 일반 공백)는 1바이트이며 화면에서 1칸을 차지합니다.
         else if ((str[i] & 0xE0) == 0xC0) { i += 2; len += 2; } // 2바이트 크기의 유니코드 특수문자는 화면에서 2칸을 차지합니다.
@@ -175,27 +180,27 @@ void ShowLogo(void)
 
     // 파란 박스 안에 찍어줄 픽셀 그래픽 디자인 문자열 배열입니다. (W=흰칸, B/X=검은칸, 공백=파란바탕)
     const char* logo[] = {
-       "                                                     ",
+       "                                                    ",
        "  WWWWWW                                             ",
-       " WWW   WWWBB                                         ",
-       " WWW   WWWBB                                         ",
-       " WWW   WWWBB     XXXXXX  XXXXX  XXXXX                   ",
-       "  WWWWWWWBB          X   X   X  X                      ",
-       "   BBBBB            X    XXXXX  XXXXX                   ",
-       "                   X     X   X  X                      ",
-       "                 XXXXXX  X   X  XXXXX                  ",
-       "                                                     ",
-       "                   XXX   X   X  XXXXX                   ",
-       "                  X   X  XX  X  X                       ",
-       "                  X   X  X X X  XXXXX                   ",
-       "                  X   X  X  XX  X                       ",
-       "                   XXX   X   X  XXXXX       WWW           ",
-       "                                          WWWWWBB       ",
-       "                                          WW WWBB       ",
-       "                                             WWBB        ",
-       "                                             WWBB        ",
-       "                                          WWWWWWWWBB    ",
-       "                                           BBBBBB       "
+       " WWW   WWWBB                                       ",
+       " WWW   WWWBB                                       ",
+       " WWW   WWWBB  XXXXXX  XXXXX  XXXXX                 ",
+       "  WWWWWWWBB        X   X   X  X                    ",
+       "    BBBBB         X    XXXXX  XXXXX                ",
+       "                 X     X   X  X                    ",
+       "               XXXXXX  X   X  XXXXX                ",
+       "                                                    ",
+       "                 XXX   X   X  XXXXX                ",
+       "                X   X  XX  X  X                    ",
+       "                X   X  X X X  XXXXX                ",
+       "                X   X  X  XX  X                    ",
+       "                 XXX   X   X  XXXXX      WWW         ",
+       "                                       WWWWWBB       ",
+       "                                       WW WWBB       ",
+       "                                          WWBB       ",
+       "                                          WWBB       ",
+       "                                      WWWWWWWWBB     ",
+       "                                        BBBBBB       "
     };
 
     int logo_height = 21; // 픽셀 아트 이미지의 세로 라인 수입니다.
@@ -265,6 +270,12 @@ int RenderTitle(void)
         title_loaded = 1; // 다음 루프 실행 시에는 이 긴 파일 로드 과정을 건너뛰도록 로딩 완료 도장을 찍습니다.
     }
 
+    // [복구] 상단 좌측 여백에 플레이어의 입력을 환영하는 문구를 산뜻한 초록색으로 렌더링합니다.
+    set_color(BG_COLOR_BLACK);
+    set_color(FONT_COLOR_GREEN);
+    move_cursor(10, 3);
+    printf("환영합니다, [%s] 님!", playerName);
+
     set_color(FONT_COLOR_WHITE); // 타이틀 그래픽 폰트의 글씨 색상을 깔끔한 흰색으로 설정합니다.
     int title_start_y = 2; // 화면 맨 위 천장에서부터 2칸 아래를 시작 높이로 지정합니다.
     for (int i = 0; i < title_line_count; i++) { // 파일에서 복사해둔 타이틀 줄 수만큼 화면에 드로우하기 위해 반복합니다.
@@ -272,7 +283,7 @@ int RenderTitle(void)
         get_content_stats(title_lines[i], &prefix, &content_w); // 줄의 공백과 크기를 다시 추출합니다.
         int target_x = (SCREEN_WIDTH - max_content_width) / 2 - prefix; // 120칸 가로 화면 기준 한가운데 정렬되도록 오프셋 수학 연산을 수행합니다.
         if (target_x < 1) target_x = 1; // 연산 결과가 화면 왼쪽 바깥으로 튕겨나가지 않도록 최소 한계를 1칸으로 가둡니다.
-        move_cursor(target_x + 65 , title_start_y + i + 14); // 완벽한 좌우 중앙 정렬 계산 결과 좌표 위치로 커서를 옮겨 놓습니다.
+        move_cursor(target_x + 65, title_start_y + i + 14); // 완벽한 좌우 중앙 정렬 계산 결과 좌표 위치로 커서를 옮겨 놓습니다.
         printf("%s", title_lines[i]); // 마침내 정렬된 자리에 메인 아트 문구를 화면에 출력합니다.
     }
 
@@ -356,14 +367,14 @@ void print_member_page(const char* filename, const char* description) {
     // 아스키아트 아래 하단 고정 스펙 영역 레이아웃 가이드를 드로우합니다.
     move_cursor((SCREEN_WIDTH + 38) / 2, 38); // 하단 영역 데코레이션 가로선 줄 위치를 정중앙으로 잡습니다.
     printf("==================================================");
-    move_cursor((SCREEN_WIDTH - calculate_visual_length(description)) / 1 , 39); // 팀원 직책 학번 이름 정보를 중앙으로 정렬해 출력합니다.
+    move_cursor((SCREEN_WIDTH - calculate_visual_length(description)) / 1, 39); // 팀원 직책 학번 이름 정보를 중앙으로 정렬해 출력합니다.
     printf("%s", description);
     move_cursor((SCREEN_WIDTH + 38) / 2, 40); // 닫는 데코레이션 가로 구분선 줄을 정중앙 정렬해 출력합니다.
     printf("==================================================");
 
     // 유저가 페이지를 제어할 수 있도록 돕는 UI 가이드 네비게이션 메시지를 중앙 정렬로 노출합니다.
     const char* nav_str = "[ <- 이전 페이지 ]        [ Backspace 메뉴로 돌아가기 ]        [ 다음 페이지 -> ]";
-    move_cursor((SCREEN_WIDTH + calculate_visual_length(nav_str)) / 3 , 42); // 안내 가이드 한 줄을 가로 기준 정중앙 정렬 좌표로 기동합니다.
+    move_cursor((SCREEN_WIDTH + calculate_visual_length(nav_str)) / 3, 42); // 안내 가이드 한 줄을 가로 기준 정중앙 정렬 좌표로 기동합니다.
     printf("%s", nav_str); // 조작 내비 바 텍스트를 출력합니다.
 }
 
@@ -384,11 +395,11 @@ void draw_final_screen(void) {
 
     // 파란 박스 상단에 찍어줄 팀 타이틀 "ZERONE" 이니셜 그래픽 매핑용 배열입니다.
     const char* title_text[] = {
-        "XXXXX   XXXXX  XXXX   XXXXX  X   X  XXXXX",
-        "   X    X      X   X  X   X  XX  X  X    ",
-        "  X     XXXX   XXXX   X   X  X X X  XXXX ",
-        " X      X      X   X  X   X  X  XX  X    ",
-        "XXXXX   XXXXX  X   X  XXXXX  X   X  XXXXX"
+        "XXXXX  XXXXX  XXXX   XXXXX  X   X  XXXXX",
+        "   X   X      X   X  X   X  XX  X  X    ",
+        "  X    XXXX   XXXX   X   X  X X X  XXXX ",
+        " X     X      X  X   X   X  X  XX  X    ",
+        "XXXXX  XXXXX  X   X  XXXXX  X   X  XXXXX"
     };
 
     int title_width = (int)strlen(title_text[0]); // ZERONE 픽셀 자막의 가로 글자 길이를 뽑아옵니다.
@@ -606,13 +617,15 @@ int Gamestart(void)
         }
 
         // 유저 모니터 스크린 최상단 영역에 실시간 플레이어 체력 현황과 생존 누적 턴 점수 스탯 정보를 시각화 표기합니다.
-        set_color(FONT_COLOR_RED); move_cursor(35, 2); printf("HP : %d", hp); // 중요 생명 수치 지표인 라이프 체력을 박진감 넘치는 붉은색 글씨로 상단 좌측선에 배치 출력합니다.
+        // [복구] 첫 번째 코드 사양에 따라 닉네임과 간격 오프셋 UI 가독성을 완벽 조율했습니다.
+        set_color(FONT_COLOR_GREEN); move_cursor(15, 2); printf("Player : %s", playerName);
+        set_color(FONT_COLOR_RED); move_cursor(45, 2); printf("HP : %d", hp); // 중요 생명 수치 지표인 라이프 체력을 박진감 넘치는 붉은색 글씨로 상단 좌측선에 배치 출력합니다.
         set_color(FONT_COLOR_WHITE); move_cursor(75, 2); printf("SCORE : %d", score); // 현재 영광의 생존 라운드 점수 스코어를 단정한 흰색 글씨로 상단 우측선에 대칭 매핑합니다.
-        set_color(FONT_COLOR_YELLOW); move_cursor(59, 11); printf("VS"); // 좌우 선택지의 운명의 서바이벌 매치업 데코레이션 문구 단어를 노란색으로 정중앙에 수놓습니다.
+        set_color(FONT_COLOR_YELLOW); move_cursor(58, 12); printf("VS"); // 좌우 선택지의 운명의 서바이벌 매치업 데코레이션 문구 단어를 노란색으로 정중앙에 수놓습니다.
         set_color(FONT_COLOR_WHITE); // 채색 렌더링 세팅 속성을 일반 흰색으로 원상 복구 초기화합니다.
 
         // 고도화된 문자열 자동 결합 포맷팅 모듈 프로세스를 가동합니다.
-        char left_msg[256], right_msg[256]; // 무작위로 뽑아낸 가변 숫자 가 융합 완료되어 완전히 문장 조립이 끝난 최종 가이드라인 자막 메시지를 구워 담을 깨끗한 메모리 냄비 공간 둘을 개설합니다.
+        char left_msg[256], right_msg[256]; // 무작위로 뽑아낸 가변 숫자가 융합 완료되어 완전히 문장 조립이 끝난 최종 가이드라인 자막 메시지를 구워 담을 깨끗한 메모리 냄비 공간 둘을 개설합니다.
         if (strstr(choices[left_idx].text, "%d") != NULL) sprintf(left_msg, choices[left_idx].text, left_n); // 만약 가변 숫자가 적용되는 양식 문장이라면, %d 자리에 아까 정밀 뽑기해 둔 가변 숫자(left_n)를 완벽히 대입 조립 결합하여 최종 완성 문장으로 변환해 left_msg 용기에 주입합니다.
         else strcpy(left_msg, choices[left_idx].text); // 일반 단순 정적 문장 형태의 선택지라면 원본 텍스트 내용을 토씨 하나 틀리지 않게 있는 그대로 안전하게 복사 카피해 left_msg 용기에 채워 넣습니다.
         if (strstr(choices[right_idx].text, "%d") != NULL) sprintf(right_msg, choices[right_idx].text, right_n); // 우측 선택지 자막 문장도 가변 숫자 대입 조립 양식 매칭 여부를 판독해 동일하게 조립 가공을 대칭 수행합니다.
@@ -625,16 +638,16 @@ int Gamestart(void)
 
         set_color(FONT_COLOR_WHITE); // 드로우 컬러 속성을 흰색으로 확정 세팅합니다.
         for (int i = 0; i < 6; i++) {
-            move_cursor(23, 7 + i); printf("%s", choices[left_idx].art[i]); // 왼쪽 지정 배치 영역 도화지 라인 위치로 한 줄씩 하강 이동하며 할당된 선택지의 전용 아스키 아트 그래픽 그림 6줄을 순차 프린팅 구현합니다.
+            move_cursor(25, 8 + i); printf("%s", choices[left_idx].art[i]); // 왼쪽 지정 배치 영역 도화지 라인 위치로 한 줄씩 하강 이동하며 할당된 선택지의 전용 아스키 아트 그래픽 그림 6줄을 순차 프린팅 구현합니다.
         }
-        move_cursor(left_x, 15); printf("%s", left_msg); // 정밀 기하학 연산으로 좌우 대칭 중앙 정렬점이 완벽하게 확보 완료된 바로 그 가로 left_x 좌표 줄 자리에 최종 가공 완료된 왼쪽 선택지 행동 가이드 자막 문장을 마킹 출력합니다.
+        move_cursor(left_x, 18); printf("%s", left_msg); // 정밀 기하학 연산으로 좌우 대칭 중앙 정렬점이 완벽하게 확보 완료된 바로 그 가로 left_x 좌표 줄 자리에 최종 가공 완료된 왼쪽 선택지 행동 가이드 자막 문장을 마킹 출력합니다.
 
         for (int i = 0; i < 6; i++) {
-            move_cursor(85, 7 + i); printf("%s", choices[right_idx].art[i]); // 오른쪽 지정 배치 영역 도화지 라인 위치로 대칭 이동하며 할당된 우측 선택지 전용 아스키 아트 그래픽 그림 6줄을 순차 프린팅 구현합니다.
+            move_cursor(80, 8 + i); printf("%s", choices[right_idx].art[i]); // 오른쪽 지정 배치 영역 도화지 라인 위치로 대칭 이동하며 할당된 우측 선택지 전용 아스키 아트 그래픽 그림 6줄을 순차 프린팅 구현합니다.
         }
-        move_cursor(right_x, 15); printf("%s", right_msg); // 좌우 대칭 중앙 정렬점이 완벽히 잡힌 바로 그 가로 right_x 좌표 줄 자리에 최종 가공 가공 완료된 오른쪽 선택지 행동 가이드 자막 문장을 마킹 출력합니다.
+        move_cursor(right_x, 18); printf("%s", right_msg); // 좌우 대칭 중앙 정렬점이 완벽히 잡힌 바로 그 가로 right_x 좌표 줄 자리에 최종 가공 완료된 오른쪽 선택지 행동 가이드 자막 문장을 마킹 출력합니다.
 
-        set_color(FONT_COLOR_GREEN); move_cursor(32, 23); printf("방향키(←, →)로 선택하세요. (메뉴로 가기: Backspace)"); // 게임 진행 조작 가이드 안내 텍스트 힌트 문구를 눈에 편안함을 주는 초록색(32) 자막 글씨로 하단 중앙 영역선 줄에 이쁘게 사출 노출합니다.
+        set_color(FONT_COLOR_GREEN); move_cursor(35, 25); printf("방향키(←, →)로 선택하세요. (메뉴로 가기: Backspace)"); // 게임 진행 조작 가이드 안내 텍스트 힌트 문구를 눈에 편안함을 주는 초록색(32) 자막 글씨로 하단 중앙 영역선 줄에 이쁘게 사출 노출합니다.
         set_color(FONT_COLOR_WHITE); // 색상 속성 타깃을 다시 기본 하얀색으로 리셋 복원합니다.
 
         int has_selected = 0; // 유저가 숙고 끝에 최종 운명의 생존 결단을 내려 버튼을 완벽히 눌렀는지 확인 식별하는 스위치 플래그입니다. (0=미결정 방황 상태, 1=결정 완료 탈출 스위치 온)
@@ -665,10 +678,10 @@ int Gamestart(void)
                 while (1) // 일시 중지 중단 안내 팝업 메시지 창을 제어하는 로컬 무한 서스펜드 대기 루프창을 개설 가동합니다.
                 {
                     set_color(BG_COLOR_BLACK); move_cursor(20, 7); // 배경색 속성을 정적 칠흑 검은색(40)으로 변경 마스킹하고 화면 정중앙 팝업 전용 드로우 시작 줄 레이아웃 좌표로 이동 기동합니다.
-                    printf("                                                                                                                                                                \n                                                                                                                                                                \n                                                                                                                                                                \n                                                                                                                                                                \n                                                                                                                                                                \n                                                                                                                                                                \n                                                                                                                                                                \n"); // 기존에 화려하게 그려져 있던 게임 갈림길 질문 그림들을 스크린에서 일시 가려 차단해 버리기 위해 대형 검은색 공백 자막 포탄을 연속 사출하여 팝업 다이얼로그 전용 클린 빈 슬롯 창 면적 공간을 강제 밀어버려 개척합니다.
+                    printf("                                                                                                                       \n                                                                                                                       \n                                                                                                                       \n                                                                                                                       \n                                                                                                                       \n                                                                                                                       \n                                                                                                                       \n"); // 기존에 화려하게 그려져 있던 게임 갈림길 질문 그림들을 스크린에서 일시 가려 차단해 버리기 위해 대형 검은색 공백 자막 포탄을 연속 사출하여 팝업 다이얼로그 전용 클린 빈 슬롯 창 면적 공간을 강제 밀어버려 개척합니다.
 
-                    set_color(FONT_COLOR_RED); move_cursor(48, 11); printf("게임을 중지하시겠습니까?"); // 유저에게 긴장감을 주는 강렬한 레드 선명 컬러 자막으로 한가운데 중단 의사를 타진 물어봅니다.
-                    move_cursor(38, 14); printf("게임을 계속하려면 t, 중지하려면 r를 누르시오."); // 중단 처리 분기 액션을 유도하기 위한 최종 옵션 제어 안내를 출력 배치합니다.
+                    set_color(FONT_COLOR_RED); move_cursor(50, 12); printf("게임을 중지하시겠습니까?"); // 유저에게 긴장감을 주는 강렬한 레드 선명 컬러 자막으로 한가운데 중단 의사를 타진 물어봅니다.
+                    move_cursor(40, 15); printf("게임을 계속하려면 t, 중지하려면 r를 누르시오."); // 중단 처리 분기 액션을 유도하기 위한 최종 옵션 제어 안내를 출력 배치합니다.
 
                     key = _getch(); // 일시정지 분기점 명령 처리를 승인받기 위해 키보드 인터랙션 모션을 긴급 대기 홀딩 수령합니다.
 
@@ -705,21 +718,44 @@ int Gamestart(void)
             damage = (rand() % (max - min + 1)) + min; // 정밀 공정 랜덤 난수 가공 산식을 대입 작동시켜 사전 규정된 최소값과 최대값 수치 사잇값 범위 한계선 내부에서 단 하나의 실질 피해 타격 대미지 점수를 무작위로 완전 공정하게 추출 산정해 냅니다.
         }
 
-        hp -= damage; // 주인공 영웅의 소중한 현재 라이프 실질 체력 스탯 수치에서 최종 산정 완료된 무자비한 피해 타격 대미지 수치를 차감 삭감 적용합니다.
+        hp -= damage; // 주인공 영웅의 소중한 현재 라이프 실질 체력 스탯 수치에서 최종 산정 완료된 피해 타격 대미지 수치를 차감 삭감 적용합니다. (음수 피해인 경우 체력 회복 적용)
+
+        // [복구] 체력이 회복되었을 시 최대 수치 선 한계선인 100점을 절대 초과하지 못하도록 제한하는 오버플로우 한계 가이딩 로직입니다.
+        if (hp > 100)
+        {
+            hp = 100;
+        }
+
         score += 1;   // 죽음의 피격 타격을 받고도 기어코 이번 위험 턴 라운드를 무사히(?) 버티고 생존해 넘겼으므로 유저의 생존 업적 누적 턴 스코어 점수를 영광의 1점 증량 누적 획득 처리합니다.
 
         system("cls"); // 피격 대미지 리포트 결과 화면을 집중도 높고 깔끔하게 연출하기 위해 인게임 질문 화면 그래픽을 싹 지워 초기화합니다.
-        move_cursor(45, 12); // 결과 보고 글귀가 화면 정중앙 최적의 시각 존에 위치하도록 정렬 좌표 커서 기동을 수행합니다.
-        printf("선택 완료! HP가 %d 감소했습니다.", damage); // 이번 라운드 결정으로 주인공의 심장에 입힌 누적 타격 피해 대미지 리포트 수치를 유저에게 노출 가인식시킵니다.
+        move_cursor(50, 12); // 결과 보고 글귀가 화면 정중앙 최적의 시각 존에 위치하도록 정렬 좌표 커서 기동을 수행합니다.
+
+        // [복구] 데미지가 음수(회복)냐 양수(피해)냐에 따라 최종 스크린 출력 멘트를 깔끔하게 자동 분기 처리해 줍니다.
+        if (damage < 0)
+        {
+            printf("선택 완료! HP가 %d 회복되었습니다.", -damage);
+        }
+        else
+        {
+            printf("선택 완료! HP가 %d 감소했습니다.", damage); // 이번 라운드 결정으로 주인공의 심장에 입힌 누적 타격 피해 대미지 리포트 수치를 유저에게 노출 가인식시킵니다.
+        }
+
         Sleep(2000); // 유저가 피격 충격 수치 결과를 눈으로 똑똑히 읽고 정신을 가다듬을 수 있도록 2초(2000ms) 동안 화면 작동을 강제 일시 동결 연출합니다.
+
+        // 입력 버퍼 비우기 (연타로 밀려 들어온 버그성 잔여 키값을 지워 다음 라운드 오작동을 완벽히 방어합니다)
+        while (_kbhit())
+        {
+            _getch();
+        }
     } // 핵심 생존 게임 연산 while 무한 휠 루프의 마감점입니다. 주인공의 라이프 체력이 영(0) 이하 숫자가 찍혀 완전히 사망할 때까지 이 회전 바퀴가 계속 돌며 라운드를 생성 주행합니다.
 
     // 주인공 영웅의 라이프 체력이 기어코 완전 바닥나 영(0) 이하 사망 판정을 터치하고 코어 생존 루프 바퀴를 슬프게 탈출해 내려왔을 때 집행되는 비극적인 최종 게임 오버 게임 패배 드로우 렌더 연출부입니다.
     system("cls"); // 아비규환이 된 피격 연출 흔적을 스크린에서 완전 비우기 탈색 청소 처리합니다.
-    set_color(FONT_COLOR_RED); move_cursor(54, 11); printf("GAME OVER"); // 전장의 공포감과 비극을 선사하는 강렬하고 묵직한 붉은색(31) 컬러 폰트로 게임오버 종막 대문 간판 자막을 정중앙에 각인 선언합니다.
+    set_color(FONT_COLOR_RED); move_cursor(54, 12); printf("GAME OVER"); // 전장의 공포감과 비극을 선사하는 강렬하고 묵직한 붉은색(31) 컬러 폰트로 게임오버 종막 대문 간판 자막을 정중앙에 각인 선언합니다.
 
-    set_color(FONT_COLOR_WHITE); move_cursor(50, 13); printf("최종 버틴 점수 : %d", score); // 그동안 유저가 뇌를 풀가동해 핏빛 사투를 벌이며 위대하게 버텨낸 영광의 최종 누적 생존 라운드 스코어 스탯 점수 기록을 단정한 흰색 자막으로 명시 표기합니다.
-    move_cursor(42, 17); printf("Backspace를 누르면 메뉴로 돌아갑니다."); // 종막을 확인한 유저가 다시 홈 화면으로 돌아가 재도전을 설계할 수 있도록 리턴 숏컷 조작법을 정중앙선 좌표에 가이드라인 안내합니다.
+    set_color(FONT_COLOR_WHITE); move_cursor(50, 14); printf("최종 버틴 점수 : %d", score); // 그동안 유저가 뇌를 풀가동해 핏빛 사투를 벌이며 위대하게 버텨낸 영광의 최종 누적 생존 라운드 스코어 스탯 점수 기록을 단정한 흰색 자막으로 명시 표기합니다.
+    move_cursor(43, 18); printf("Backspace를 누르면 메뉴로 돌아갑니다."); // 종막을 확인한 유저가 다시 홈 화면으로 돌아가 재도전을 설계할 수 있도록 리턴 숏컷 조작법을 정중앙선 좌표에 가이드라인 안내합니다.
 
     while (1) // 유저가 결과를 겸허히 수용하고 인증 도장을 찍는 의미로 백스페이스 확인 버튼을 누를 때까지 화면을 고정 동결해 가두는 마감 무한 대기 루프창입니다.
     {
@@ -785,7 +821,7 @@ int Gameover(void)
     exit(0); // 10초간의 긴 여운과 작별 식순이 전면 완전히 종료되었으므로, C 표준 라이브러리 시스템 최고 핵심 명령을 하달하여 구동 중이던 콘솔창 게임 프로그램 프로세스 자원 자체를 운영체제 메모리에서 통째로 전면 강제 클로즈 즉각 완전 종료 폐쇄 아웃시킵니다.
 }
 
-// 매개변수로 ANSI 컬러 고유 정수 번호 코드값 하나를 수령 수신하여, 그 즉시 콘솔 터미널 터미널에 뿌려지는 텍스트 폰트/배경 채색 상태 설정을 실시간 변경 전환해 주는 유틸리티 인터페이스 함수입니다.
+// 매개변수로 ANSI 컬러 고유 정수 번호 코드값 하나를 수령 수신하여, 그 즉시 콘솔 터미널에 뿌려지는 텍스트 폰트/배경 채색 상태 설정을 실시간 변경 전환해 주는 유틸리티 인터페이스 함수입니다.
 void set_color(int code)
 {
     printf("\x1b[%dm", code); // 콘솔 터미널 출력 가상 스레드 파이프라인 줄에 ANSI 에스케이프 컬러 마스킹 코드를 즉각 정밀 사출 사이어 발사하여 이후의 채색 렌더링 환경 설정을 변환 전환시킵니다.
@@ -813,6 +849,17 @@ int main(void)
     int gameStatus = 0; // 프로그램 내부가 메인 타이틀 상태인지, 인게임 생존 상태인지, 설명서 보기 상태인지 전체 컴포넌트의 진행 화면 분기 상황 상태를 중앙 관리 제어하는 핵심 네비게이션 제어 코드 번호 변수입니다. (초기 구동값 0번 = 메인 타이틀 메뉴 화면 상태 부여)
 
     ShowLogo(); // 프로그램 메인 엔진 가동 휠이 돌기 직전, 단 한 번 웅장하고 아름다운 파란색 박스 제로원 제작사 인트로 픽셀 로고와 전체화면 전환 권고 안내 가이딩 멘트 화면 모듈을 스크린에 전격 노출 집행합니다.
+
+    // [복구] 대기 박스가 끝나면 닉네임을 타자하여 입력받을 사용자 닉네임 입력 전용 UI 프레임을 로딩합니다.
+    set_color(FONT_COLOR_WHITE);
+    move_cursor(45, 14);
+    printf("플레이어의 닉네임을 입력하세요: ");
+    set_color(FONT_COLOR_YELLOW); // 입력 필드는 가시성 확보를 위해 노란색 폰트로 마크업합니다.
+    scanf("%49s", playerName);    // 가상 버퍼 오버플로우 침범 버그 예방 수식(%49s) 탑재 완료
+
+    // 키보드 엔터 찌꺼기 텍스트 청소 파이프라인 가동 (이후 메뉴 _getch 튐 오작동 방어)
+    while (getchar() != '\n');
+    system("cls");
 
     while (isRunning) // 프로그램 가동 전역 스위치 플래그 변수 수치가 참(1)을 굳건히 유지 유지하며 살아 숨 쉬는 동안 멈춤 없이 24시간 실시간 무한 고속 회전 구동되는 프로그램 전반 핵심 메인 기어 가동 가동 휠 루프입니다.
     {

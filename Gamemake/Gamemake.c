@@ -8,7 +8,8 @@
 #include <stdlib.h>   // 난수 생성(rand, srand) 및 시스템 명령어(system)를 위한 헤더 파일
 #include <time.h>     // 시간 관련 함수(time)를 사용하여 난수 시드를 설정하기 위한 헤더 파일
 
-#define COLOR_RESET "\x1b[0m" // 콘솔 텍스트 색상을 기본값으로 초기화하는 ANSI 이스케이프 시퀀스
+#define COLOR_RESET "\x1b[0m" 
+// 콘솔 텍스트 색상을 기본값으로 초기화하는 ANSI 이스케이프 시퀀스
 
 // 콘솔 텍스트 폰트(글자) 및 배경 색상을 지정하기 위한 ANSI 색상 코드 매크로 정의
 #define FONT_COLOR_BLACK 30
