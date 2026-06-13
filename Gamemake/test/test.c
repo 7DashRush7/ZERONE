@@ -729,6 +729,12 @@ int Gamestart(void)
             hp = 100;
         }
 
+        if (strstr(choices[selected_idx].text, "귀여운 길고양이를 쓰다듬는다.") != NULL)
+        {
+            // PlaySound 함수를 사용하여 비동기(SND_ASYNC)로 wav 파일을 재생합니다.
+            // 인게임 중에는 타이틀 BGM이 꺼져 있으므로 사운드 충돌 없이 깔끔하게 재생됩니다.
+            PlaySound(TEXT("angry_cat.wav"), NULL, SND_FILENAME | SND_ASYNC);
+        }
         score += 1;   // 죽음의 피격 타격을 받고도 기어코 이번 위험 턴 라운드를 무사히(?) 버티고 생존해 넘겼으므로 유저의 생존 업적 누적 턴 스코어 점수를 영광의 1점 증량 누적 획득 처리합니다.
 
         system("cls"); // 피격 대미지 리포트 결과 화면을 집중도 높고 깔끔하게 연출하기 위해 인게임 질문 화면 그래픽을 싹 지워 초기화합니다.
