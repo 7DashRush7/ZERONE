@@ -843,14 +843,59 @@ int Gamestart(void)
         set_color(FONT_COLOR_GREEN); move_cursor(help_x, help_y); printf("%s", help_msg);
         set_color(FONT_COLOR_WHITE);
 
+        int left_auto_damage = choices[left_idx].max_damage;
+        int right_auto_damage = choices[right_idx].max_damage;
+
+        if (left_idx == 5) left_auto_damage = left_n * 4;
+        else if (left_idx == 7) left_auto_damage = left_n * 2;
+
+        if (right_idx == 5) right_auto_damage = right_n * 4;
+        else if (right_idx == 7) right_auto_damage = right_n * 2;
+
+        int auto_selected_idx = (left_auto_damage >= right_auto_damage) ? left_idx : right_idx;
         int has_selected = 0;
         int selected_idx = 0;
+        int timeout_seconds = 7;
+        int last_remaining = -1;
+        int timer_x = hud_x + player_hud_len + hud_gap + hp_hud_len + hud_gap + score_hud_len + 12;
+        DWORD start_tick = GetTickCount();
 
         while (!has_selected)
         {
+            DWORD elapsed_ms = GetTickCount() - start_tick;
+            int remaining = timeout_seconds - (int)(elapsed_ms / 1000);
+            if (remaining < 0) remaining = 0;
+
+            if (remaining != last_remaining)
+            {
+                char timer_msg[32];
+                sprintf(timer_msg, "TIME : %d", remaining);
+
+                if (remaining <= 3) set_color(FONT_COLOR_RED);
+                else set_color(FONT_COLOR_YELLOW);
+
+                move_cursor(timer_x, hud_y);
+                printf("%-12s", timer_msg);
+                set_color(FONT_COLOR_WHITE);
+                last_remaining = remaining;
+            }
+
+            if (elapsed_ms >= (DWORD)(timeout_seconds * 1000))
+            {
+                selected_idx = auto_selected_idx;
+                has_selected = 1;
+                break;
+            }
+
+            if (!_kbhit())
+            {
+                Sleep(50);
+                continue;
+            }
+
             key = _getch();
 
-            if (key == 224)
+            if (key == 0 || key == 224)
             {
                 key = _getch();
                 if (key == 75)
@@ -866,6 +911,7 @@ int Gamestart(void)
             }
             else if (key == 8)
             {
+                DWORD pause_start = GetTickCount();
                 save_console_screen();
 
                 while (1)
@@ -888,17 +934,17 @@ int Gamestart(void)
                     if (key == 't')
                     {
                         restore_console_screen();
+                        start_tick += GetTickCount() - pause_start;
+                        last_remaining = -1;
                         break;
                     }
                 }
             }
             else if (key == 27)
             {
-                // Ignore ESC on the choice screen so it does not close the game.
                 continue;
             }
         }
-
         int damage = 0;
 
         if (strstr(choices[selected_idx].text, "Ãþ¿¡¼­ ¶³¾îÁ³´Ù") != NULL)
