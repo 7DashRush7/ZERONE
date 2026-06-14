@@ -33,7 +33,11 @@ C:\Zerone\새 폴더\Gamemake\test\Gamemake.c(934,136): warning C4819: 현재 �
 C:\Zerone\새 폴더\Gamemake\test\Gamemake.c(1064,70): warning C4819: 현재 코드 페이지(0)에서 표시할 수 없는 문자가 파일에 들어 있습니다. 데이터가 손실되지 않게 하려면 해당 파일을 유니코드 형식으로 저장하십시오.
 C:\Zerone\새 폴더\Gamemake\test\Gamemake.c(1065,74): warning C4819: 현재 코드 페이지(0)에서 표시할 수 없는 문자가 파일에 들어 있습니다. 데이터가 손실되지 않게 하려면 해당 파일을 유니코드 형식으로 저장하십시오.
 C:\Zerone\새 폴더\Gamemake\test\Gamemake.c(1066,54): warning C4819: 현재 코드 페이지(0)에서 표시할 수 없는 문자가 파일에 들어 있습니다. 데이터가 손실되지 않게 하려면 해당 파일을 유니코드 형식으로 저장하십시오.
-C:\Zerone\새 폴더\Gamemake\test\Gamemake.c(1093,128): warning C4819: 현재 코드 페이지(0)에서 표시할 수 없는 문자가 파일에 들어 있습니다. 데이터가 손실되지 않게 하려면 해당 파일을 유니코드 형식으로 저장하십시오.
+C:\Zerone\새 폴더\Gamemake\test\Gamemake.c(1093,146): warning C4819: 현재 코드 페이지(0)에서 표시할 수 없는 문자가 파일에 들어 있습니다. 데이터가 손실되지 않게 하려면 해당 파일을 유니코드 형식으로 저장하십시오.
+C:\Zerone\새 폴더\Gamemake\test\Gamemake.c(1093,136): warning C4474: 'sprintf' : 서식 문자열에 전달된 인수가 너무 많습니다.
+      C:\Zerone\새 폴더\Gamemake\test\Gamemake.c(1093,136):
+      자리 표시자 및 해당 매개 변수에는 variadic 인수가 0개 필요하지만 1개가 제공되었습니다.
+  
 C:\Zerone\새 폴더\Gamemake\test\Gamemake.c(1225,90): warning C4819: 현재 코드 페이지(0)에서 표시할 수 없는 문자가 파일에 들어 있습니다. 데이터가 손실되지 않게 하려면 해당 파일을 유니코드 형식으로 저장하십시오.
 C:\Zerone\새 폴더\Gamemake\test\Gamemake.c(1229,86): warning C4819: 현재 코드 페이지(0)에서 표시할 수 없는 문자가 파일에 들어 있습니다. 데이터가 손실되지 않게 하려면 해당 파일을 유니코드 형식으로 저장하십시오.
 C:\Zerone\새 폴더\Gamemake\test\Gamemake.c(1253,96): warning C4819: 현재 코드 페이지(0)에서 표시할 수 없는 문자가 파일에 들어 있습니다. 데이터가 손실되지 않게 하려면 해당 파일을 유니코드 형식으로 저장하십시오.

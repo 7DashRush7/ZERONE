@@ -1088,14 +1088,15 @@ int Gamestart(void)
             {
                 // 실패 시 하악질 소리 재생 
                 PlaySound(TEXT("angry_cat.wav"), NULL, SND_FILENAME | SND_ASYNC);
-                int cat_damage = (rand() % 11) + 10;
+                int cat_damage = 100; //(rand() % 11) + 10;
                 char lose_msg[128];
-                sprintf(lose_msg, "참참참 실패! 고양이가 하악질을 하며 할큅니다. (HP %d 감소)", cat_damage);
+                sprintf(lose_msg, "참참참 실패! 고양이가 하악질을 하며 할큅니다. 과다출혈로 사망합니다.", cat_damage);
                 int msg_len = calculate_visual_length(lose_msg);
                 move_cursor(mini_center - (msg_len / 2), 29);
                 set_color(FONT_COLOR_RED);
                 printf("%s", lose_msg);
                 damage = cat_damage;
+                goto TP;
             }
 
             Sleep(3000);
