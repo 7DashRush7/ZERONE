@@ -35,6 +35,8 @@
 
 #define SCREEN_WIDTH 120  // 이 프로그램이 사용하는 가상 콘솔 화면의 최대 가로 칸(폭)을 120칸으로 정합니다.
 #define SCREEN_HEIGHT 30  // 이 프로그램이 사용하는 가상 콘솔 화면의 최대 세로 줄(높이)을 30줄로 정합니다.
+#define SAVE_SCREEN_WIDTH 240
+#define SAVE_SCREEN_HEIGHT 80
 
 // 프로그램 안에서 사용할 기능(함수)들의 목차를 컴파일러에게 미리 알려주는 선언부입니다.
 void set_color(int code);
@@ -106,7 +108,9 @@ Choice choices[] =
 };
 
 int num_choices = sizeof(choices) / sizeof(Choice);
-CHAR_INFO savedScreen[SCREEN_WIDTH * SCREEN_HEIGHT];
+CHAR_INFO savedScreen[SAVE_SCREEN_WIDTH * SAVE_SCREEN_HEIGHT];
+int savedScreenWidth = SCREEN_WIDTH;
+int savedScreenHeight = SCREEN_HEIGHT;
 
 // === [ 함수 ] 텍스트 파일(아스키아트) 불러와서 출력 ===
 void print_ascii_file(const char* filename, int start_x, int start_y) {
@@ -130,18 +134,32 @@ void print_ascii_file(const char* filename, int start_x, int start_y) {
 void save_console_screen()
 {
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-    COORD bufferSize = { SCREEN_WIDTH, SCREEN_HEIGHT };
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+
+    savedScreenWidth = SCREEN_WIDTH;
+    savedScreenHeight = SCREEN_HEIGHT;
+
+    if (GetConsoleScreenBufferInfo(hConsole, &csbi))
+    {
+        savedScreenWidth = csbi.srWindow.Right - csbi.srWindow.Left + 1;
+        savedScreenHeight = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
+    }
+
+    if (savedScreenWidth > SAVE_SCREEN_WIDTH) savedScreenWidth = SAVE_SCREEN_WIDTH;
+    if (savedScreenHeight > SAVE_SCREEN_HEIGHT) savedScreenHeight = SAVE_SCREEN_HEIGHT;
+
+    COORD bufferSize = { (SHORT)savedScreenWidth, (SHORT)savedScreenHeight };
     COORD bufferCoord = { 0, 0 };
-    SMALL_RECT readRegion = { 0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1 };
+    SMALL_RECT readRegion = { 0, 0, (SHORT)(savedScreenWidth - 1), (SHORT)(savedScreenHeight - 1) };
     ReadConsoleOutput(hConsole, savedScreen, bufferSize, bufferCoord, &readRegion);
 }
 
 void restore_console_screen()
 {
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-    COORD bufferSize = { SCREEN_WIDTH, SCREEN_HEIGHT };
+    COORD bufferSize = { (SHORT)savedScreenWidth, (SHORT)savedScreenHeight };
     COORD bufferCoord = { 0, 0 };
-    SMALL_RECT writeRegion = { 0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1 };
+    SMALL_RECT writeRegion = { 0, 0, (SHORT)(savedScreenWidth - 1), (SHORT)(savedScreenHeight - 1) };
     WriteConsoleOutput(hConsole, savedScreen, bufferSize, bufferCoord, &writeRegion);
 }
 
@@ -548,56 +566,88 @@ int Manual(void)
 {
     int key = 0;
     int Manual_page = 1;
-    system("cls");
+    system("mode con cols=210 lines=60");
 
     while (key != 8)
     {
+        int console_width = 210;
+        int console_height = 60;
+        CONSOLE_SCREEN_BUFFER_INFO csbi;
+
+        if (GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi))
+        {
+            console_width = csbi.srWindow.Right - csbi.srWindow.Left + 1;
+            console_height = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
+        }
+
+        int center_x = console_width / 2;
+        int title_y = (console_height / 2) - 14;
+        int body_y = title_y + 4;
+        int nav_y = title_y + 23;
+        int content_x = center_x - 48;
+
+        if (title_y < 3) title_y = 3;
+        if (body_y < 7) body_y = 7;
+        if (nav_y > console_height - 2) nav_y = console_height - 2;
+        if (content_x < 1) content_x = 1;
+
         system("cls");
 
         if (Manual_page == 1)
         {
-            move_cursor(106, 26);
-            printf("\033[1m다음장 (→)\033[0m");
+            const char* next_msg = "다음장 (→)";
+            const char* title_msg = "=========== 설명서 ===========";
+
+            move_cursor(center_x - (calculate_visual_length(next_msg) / 2), nav_y);
+            printf("\033[1m%s\033[0m", next_msg);
 
             set_color(BG_COLOR_BRIGHTMAGENTA);
             set_color(FONT_COLOR_WHITE);
-            move_cursor(45, 4);
-            printf("=========== 설명서 ===========");
+            move_cursor(center_x - (calculate_visual_length(title_msg) / 2), title_y);
+            printf("%s", title_msg);
 
             set_color(BG_COLOR_BLACK);
 
             set_color(FONT_COLOR_YELLOW);
-            move_cursor(40, 8); printf("게임 제목 : 이걸 죽네");
+            move_cursor(content_x + 38, body_y); printf("게임 제목 : 이걸 죽네");
 
-            set_color(FONT_COLOR_RED); move_cursor(40, 11); printf("HP");
+            set_color(FONT_COLOR_RED); move_cursor(content_x + 20, body_y + 3); printf("HP");
             set_color(FONT_COLOR_WHITE); printf("가 0 이하가 되기 전까지 최대한 많은 턴을 버티는 게임입니다.");
 
-            move_cursor(40, 13); printf("매 턴마다 2개 또는 3개의 선택지가 나옵니다.");
-            move_cursor(40, 14); printf("선택지 안의 숫자는 무작위로 정해집니다.");
-            move_cursor(40, 15); printf("선택한 행동에 따라 ");
+            move_cursor(content_x + 30, body_y + 5); printf("매 턴마다 2개 또는 3개의 선택지가 나옵니다.");
+            move_cursor(content_x + 32, body_y + 6); printf("선택지 안의 숫자는 무작위로 정해집니다.");
+            move_cursor(content_x + 30, body_y + 7); printf("선택한 행동에 따라 ");
 
             set_color(FONT_COLOR_RED); printf("HP"); set_color(FONT_COLOR_WHITE); printf("가 다르게 감소합니다.");
 
-            set_color(FONT_COLOR_YELLOW); move_cursor(40, 18); printf("Backspace");
+            set_color(FONT_COLOR_YELLOW); move_cursor(content_x + 32, body_y + 10); printf("Backspace");
             set_color(FONT_COLOR_WHITE); printf("를 눌러 메뉴로 돌아가시오");
         }
 
         if (Manual_page == 2)
         {
-            move_cursor(5, 26); printf("\033[1m이전장 (←)\033[0m");
-            move_cursor(98, 26); printf("\033[1m나가기 (Backspace)\033[0m");
+            const char* prev_msg = "이전장 (←)";
+            const char* exit_msg = "나가기 (Backspace)";
+            const char* title_msg = "키 설명";
 
-            move_cursor(55, 4); printf("\033[1m키 설명\033[0m");
-            move_cursor(48, 9);  printf("↑: 위로 이동");
-            move_cursor(48, 10); printf("↓: 밑으로 이동");
-            move_cursor(48, 11); printf("←: 왼쪽 선택");
-            move_cursor(48, 12); printf("→: 오른쪽 선택");
-            move_cursor(48, 13); printf("Enter : 선택");
-            move_cursor(48, 14); printf("ESC : 게임 종료");
-            move_cursor(48, 15); printf("Backspace : 뒤로 가기");
+            move_cursor(center_x - 45, nav_y); printf("\033[1m%s\033[0m", prev_msg);
+            move_cursor(center_x + 25, nav_y); printf("\033[1m%s\033[0m", exit_msg);
+
+            move_cursor(center_x - (calculate_visual_length(title_msg) / 2), title_y); printf("\033[1m%s\033[0m", title_msg);
+            move_cursor(content_x + 43, body_y + 1);  printf("↑: 위로 이동");
+            move_cursor(content_x + 43, body_y + 2); printf("↓: 밑으로 이동");
+            move_cursor(content_x + 43, body_y + 3); printf("←: 왼쪽 선택");
+            move_cursor(content_x + 43, body_y + 4); printf("→: 오른쪽 선택");
+            move_cursor(content_x + 43, body_y + 5); printf("Enter : 선택");
+            move_cursor(content_x + 43, body_y + 6); printf("ESC : 게임 종료");
+            move_cursor(content_x + 40, body_y + 7); printf("Backspace : 뒤로 가기");
         }
 
         key = _getch();
+        if (key == 0 || key == 224)
+        {
+            key = _getch();
+        }
 
         switch (key)
         {
@@ -622,23 +672,57 @@ int Gamestart(void)
     system("mode con cols=210 lines=60");
     system("cls");
 
+    int intro_width = 210;
+    int intro_height = 60;
+    CONSOLE_SCREEN_BUFFER_INFO intro_csbi;
+
+    if (GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &intro_csbi))
+    {
+        intro_width = intro_csbi.srWindow.Right - intro_csbi.srWindow.Left + 1;
+        intro_height = intro_csbi.srWindow.Bottom - intro_csbi.srWindow.Top + 1;
+    }
+
     FILE* fp = fopen("ta.txt", "r");
+    char intro_lines[100][1024];
     char buffer[1024];
-    int start_x = 40;
-    int current_y = 10;
+    int intro_line_count = 0;
+    int intro_max_width = 0;
 
     if (fp != NULL) {
-        while (fgets(buffer, sizeof(buffer), fp) != NULL) {
+        while (fgets(buffer, sizeof(buffer), fp) != NULL && intro_line_count < 100) {
             buffer[strcspn(buffer, "\r\n")] = 0;
-            gotoxy(start_x, current_y); printf("%s", buffer); current_y++;
+            strcpy(intro_lines[intro_line_count], buffer);
+
+            int line_width = calculate_visual_length(buffer);
+            if (line_width > intro_max_width) intro_max_width = line_width;
+
+            intro_line_count++;
         }
         fclose(fp);
 
-        gotoxy(start_x, current_y + 2);
-        printf("아무 키나 누르면 게임이 시작됩니다..."); _getch();
+        int start_x = (intro_width - intro_max_width) / 2;
+        int start_y = (intro_height - intro_line_count) / 2 - 2;
+        if (start_x < 1) start_x = 1;
+        if (start_y < 2) start_y = 2;
+
+        for (int i = 0; i < intro_line_count; i++) {
+            move_cursor(start_x, start_y + i);
+            printf("%s", intro_lines[i]);
+        }
+
+        const char* start_msg = "아무 키나 누르면 게임이 시작됩니다...";
+        int start_msg_x = (intro_width - calculate_visual_length(start_msg)) / 2;
+        if (start_msg_x < 1) start_msg_x = 1;
+
+        move_cursor(start_msg_x, start_y + intro_line_count + 2);
+        printf("%s", start_msg);
+        _getch();
     }
     else {
-        gotoxy(start_x, current_y); printf("오류: ta.txt 파일을 찾을 수 없습니다.\n"); Sleep(2000);
+        const char* error_msg = "오류: ta.txt 파일을 찾을 수 없습니다.";
+        int error_x = (intro_width - calculate_visual_length(error_msg)) / 2;
+        if (error_x < 1) error_x = 1;
+        move_cursor(error_x, intro_height / 2); printf("%s\n", error_msg); Sleep(2000);
     }
 
     int random_bgm = rand() % 3; // 0 또는 1 생성
@@ -678,12 +762,54 @@ int Gamestart(void)
         }
 
         int center_x = 100;
-        int left_center = center_x - 35;  // 65
-        int right_center = center_x + 35; // 135
+        int left_center = center_x - 35 + 6;
+        int right_center = center_x + 35 + 6;
 
-        set_color(FONT_COLOR_GREEN); move_cursor(60, 2); printf("Player : %s", playerName);
-        set_color(FONT_COLOR_RED); move_cursor(96, 2); printf("HP : %d", hp);
-        set_color(FONT_COLOR_WHITE); move_cursor(130, 2); printf("SCORE : %d", score);
+        int console_height = 30;
+        CONSOLE_SCREEN_BUFFER_INFO game_csbi;
+        if (GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &game_csbi))
+        {
+            console_height = game_csbi.srWindow.Bottom - game_csbi.srWindow.Top + 1;
+        }
+
+        int choice_y = (console_height - 18) / 2 + 1;
+        if (choice_y < 8) choice_y = 8;
+
+        int vs_y = choice_y + 4;
+        int msg_y = choice_y + 10;
+        int help_y = choice_y + 17;
+        int max_help_y = console_height - 2;
+
+        if (help_y > max_help_y)
+        {
+            int move_up = help_y - max_help_y;
+            choice_y -= move_up;
+            if (choice_y < 3) choice_y = 3;
+
+            vs_y = choice_y + 4;
+            msg_y = choice_y + 10;
+            help_y = choice_y + 17;
+        }
+
+        int hud_y = choice_y / 2;
+        if (hud_y < 2) hud_y = 2;
+
+        char player_hud[80], hp_hud[40], score_hud[40];
+        sprintf(player_hud, "Player : %s", playerName);
+        sprintf(hp_hud, "HP : %d", hp);
+        sprintf(score_hud, "SCORE : %d", score);
+
+        int hud_gap = 24;
+        int player_hud_len = calculate_visual_length(player_hud);
+        int hp_hud_len = calculate_visual_length(hp_hud);
+        int score_hud_len = calculate_visual_length(score_hud);
+        int hud_total_len = player_hud_len + hp_hud_len + score_hud_len + (hud_gap * 2);
+        int hud_x = center_x - (hud_total_len / 2) + 6;
+        if (hud_x < 1) hud_x = 1;
+
+        set_color(FONT_COLOR_GREEN); move_cursor(hud_x, hud_y); printf("%s", player_hud);
+        set_color(FONT_COLOR_RED); move_cursor(hud_x + player_hud_len + hud_gap, hud_y); printf("%s", hp_hud);
+        set_color(FONT_COLOR_WHITE); move_cursor(hud_x + player_hud_len + hud_gap + hp_hud_len + hud_gap, hud_y); printf("%s", score_hud);
 
         char left_msg[256], right_msg[256];
         if (strstr(choices[left_idx].text, "%d") != NULL) sprintf(left_msg, choices[left_idx].text, left_n);
@@ -696,23 +822,25 @@ int Gamestart(void)
         int left_x = left_center - (left_msg_len / 2);
         int right_x = right_center - (right_msg_len / 2);
 
-        set_color(FONT_COLOR_YELLOW); move_cursor(center_x - 1, 12); printf("VS");
+        set_color(FONT_COLOR_YELLOW); move_cursor(center_x - 1 + 6, vs_y); printf("VS");
         set_color(FONT_COLOR_WHITE);
 
         for (int i = 0; i < 6; i++) {
-            move_cursor(left_center - 4, 8 + i); printf("%s", choices[left_idx].art[i]);
+            int art_len = calculate_visual_length(choices[left_idx].art[i]);
+            move_cursor(left_center - (art_len / 2), choice_y + i); printf("%s", choices[left_idx].art[i]);
         }
-        move_cursor(left_x, 18); printf("%s", left_msg);
+        move_cursor(left_x, msg_y); printf("%s", left_msg);
 
         for (int i = 0; i < 6; i++) {
-            move_cursor(right_center - 4, 8 + i); printf("%s", choices[right_idx].art[i]);
+            int art_len = calculate_visual_length(choices[right_idx].art[i]);
+            move_cursor(right_center - (art_len / 2), choice_y + i); printf("%s", choices[right_idx].art[i]);
         }
-        move_cursor(right_x, 18); printf("%s", right_msg);
+        move_cursor(right_x, msg_y); printf("%s", right_msg);
 
         const char* help_msg = "방향키(←, →)로 선택하세요. (메뉴로 가기: Backspace)";
         int help_msg_len = calculate_visual_length(help_msg);
-        int help_x = center_x - (help_msg_len / 2);
-        set_color(FONT_COLOR_GREEN); move_cursor(help_x, 25); printf("%s", help_msg);
+        int help_x = center_x - (help_msg_len / 2) + 6;
+        set_color(FONT_COLOR_GREEN); move_cursor(help_x, help_y); printf("%s", help_msg);
         set_color(FONT_COLOR_WHITE);
 
         int has_selected = 0;
@@ -742,11 +870,13 @@ int Gamestart(void)
 
                 while (1)
                 {
-                    set_color(BG_COLOR_BLACK); move_cursor(20 + 40, 7);
-                    printf("                                                                                                                                                                                                                                                                          \n                                                                                                                                                                                                                                                                          \n                                                                                                                                                                                                                                                                          \n                                                                                                                                                                                                                                                                          \n                                                                                                                                                                                                                                                                          \n                                                                                                                                                                                                                                                                          \n                                                                                                                                                                                                                                                                          \n");
+                    printf("\x1b[2J\x1b[H");
 
-                    set_color(FONT_COLOR_RED); move_cursor(center_x - 12, 12); printf("게임을 중지하시겠습니까?");
-                    move_cursor(center_x - 22, 15); printf("게임을 계속하려면 t, 중지하려면 r를 누르시오.");
+                    int confirm_y = console_height / 2;
+                    if (confirm_y < 4) confirm_y = 4;
+
+                    set_color(FONT_COLOR_RED); move_cursor(center_x - 12, confirm_y); printf("게임을 중지하시겠습니까?");
+                    move_cursor(center_x - 22, confirm_y + 3); printf("게임을 계속하려면 t, 중지하려면 r를 누르시오.");
 
                     key = _getch();
 
@@ -811,23 +941,42 @@ int Gamestart(void)
             set_color(FONT_COLOR_WHITE);
 
             // 안내 문구를 중앙에 배치
-            const char* prompt_msg = "고양이와 참참참! 방향을 선택하세요 (1: 오른쪽, 2: 중앙, 3: 왼쪽) : ";
+            int status_y = 29;
+            const char* prompt_msg = "고양이와 참참참! 방향키를 선택하세요 (왼쪽: <-, 위쪽: 위쪽방향키, 오른쪽: ->) : ";
             int p_len = calculate_visual_length(prompt_msg);
-            move_cursor(mini_center - (p_len / 2), 65);
+            move_cursor(mini_center - 70, status_y); printf("%140s", "");
+            move_cursor(mini_center - (p_len / 2), status_y);
             printf("%s", prompt_msg);
 
-            // 플레이어 입력 받기
             while (1)
             {
-                if (scanf("%d", &player_dir) == 1 && player_dir >= 1 && player_dir <= 3) {
-                    while (getchar() != '\n');
-                    break;
-                }
-                while (getchar() != '\n');
+                int input_key = _getch();
 
-                const char* error_msg = "잘못된 입력입니다. 1, 2, 3 중 하나만 입력해주세요: ";
+                if (input_key == 0 || input_key == 224)
+                {
+                    input_key = _getch();
+
+                    if (input_key == 75)
+                    {
+                        player_dir = 3;
+                        break;
+                    }
+                    else if (input_key == 72)
+                    {
+                        player_dir = 2;
+                        break;
+                    }
+                    else if (input_key == 77)
+                    {
+                        player_dir = 1;
+                        break;
+                    }
+                }
+
+                const char* error_msg = "잘못된 입력입니다. 왼쪽/위쪽/오른쪽 방향키를 눌러주세요.";
                 int err_len = calculate_visual_length(error_msg);
-                move_cursor(mini_center - (err_len / 2), 66);
+                move_cursor(mini_center - 70, status_y); printf("%140s", "");
+                move_cursor(mini_center - (err_len / 2), status_y);
                 set_color(FONT_COLOR_RED);
                 printf("%s", error_msg);
                 set_color(FONT_COLOR_WHITE);
@@ -835,7 +984,8 @@ int Gamestart(void)
 
             const char* wait_msg = "3초 뒤 결과가 공개됩니다...";
             int w_len = calculate_visual_length(wait_msg);
-            move_cursor(mini_center - (w_len / 2), 68);
+            move_cursor(mini_center - 70, status_y); printf("%140s", "");
+            move_cursor(mini_center - (w_len / 2), status_y);
             set_color(FONT_COLOR_YELLOW);
             printf("%s", wait_msg);
             Sleep(3000);
@@ -873,7 +1023,7 @@ int Gamestart(void)
                 PlaySound(TEXT("cat.wav"), NULL, SND_FILENAME | SND_ASYNC);
                 const char* win_msg = "참참참 성공! 고양이가 기분 좋게 그르릉 거립니다. (HP 15 회복)";
                 int msg_len = calculate_visual_length(win_msg);
-                move_cursor(mini_center - (msg_len / 2), 66);
+                move_cursor(mini_center - (msg_len / 2), 29);
                 set_color(FONT_COLOR_GREEN);
                 printf("%s", win_msg);
                 damage = -15;
@@ -886,7 +1036,7 @@ int Gamestart(void)
                 char lose_msg[128];
                 sprintf(lose_msg, "참참참 실패! 고양이가 하악질을 하며 할큅니다. (HP %d 감소)", cat_damage);
                 int msg_len = calculate_visual_length(lose_msg);
-                move_cursor(mini_center - (msg_len / 2), 66);
+                move_cursor(mini_center - (msg_len / 2), 29);
                 set_color(FONT_COLOR_RED);
                 printf("%s", lose_msg);
                 damage = cat_damage;
@@ -1086,6 +1236,28 @@ int Gameover(void)
         "======================================",
         "      잠시 후 게임이 종료됩니다.      ",
         "====================================--"
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "XXXXX  XXXXX  XXXX   XXXXX  X   X  XXXXX",
+        "   X   X      X   X  X   X  XX  X  X    ",
+        "  X    XXXX   XXXX   X   X  X X X  XXXX ",
+        " X     X      X  X   X   X  X  XX  X    ",
+        "XXXXX  XXXXX  X   X  XXXXX  X   X  XXXXX"
     };
 
     int num_lines = sizeof(credits) / sizeof(credits[0]);
