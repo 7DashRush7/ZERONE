@@ -693,7 +693,7 @@ int Gamestart(void)
     char buffer[1024];
     int intro_line_count = 0;
     int intro_max_width = 0;
-
+    
     if (fp != NULL) {
         while (fgets(buffer, sizeof(buffer), fp) != NULL && intro_line_count < 100) {
             buffer[strcspn(buffer, "\r\n")] = 0;
@@ -861,7 +861,7 @@ int Gamestart(void)
         int auto_selected_idx = (left_auto_damage >= right_auto_damage) ? left_idx : right_idx;
         int has_selected = 0;
         int selected_idx = 0;
-        int timeout_seconds = 4;
+        int timeout_seconds = 3;
         int last_remaining = -1;
         int timer_x = hud_x + player_hud_len + hud_gap + hp_hud_len + hud_gap + score_hud_len + 12;
         DWORD start_tick = GetTickCount();
@@ -877,7 +877,7 @@ int Gamestart(void)
                 char timer_msg[32];
                 sprintf(timer_msg, "TIME : %d", remaining);
 
-                if (remaining <= 3) set_color(FONT_COLOR_RED);
+                if (remaining <= 2) set_color(FONT_COLOR_RED);
                 else set_color(FONT_COLOR_YELLOW);
 
                 move_cursor(timer_x, hud_y);
@@ -888,9 +888,9 @@ int Gamestart(void)
 
             if (elapsed_ms >= (DWORD)(timeout_seconds * 1000))
             {
-                selected_idx = auto_selected_idx;
+                hp = 0;
                 has_selected = 1;
-                break;
+                goto TP;
             }
 
             if (!_kbhit())
@@ -1241,6 +1241,8 @@ int Gamestart(void)
 
     finalScore = score;
 
+    TP:
+
     system("cls");
     set_color(FONT_COLOR_RED); move_cursor(95, 12); printf("GAME OVER");
 
@@ -1264,7 +1266,7 @@ int Gameover(void)
 {
     const char* credits[] = {
         "======================================",
-        "              GAME OVER               ",
+        "                 END                  ",
         "======================================",
         "",
         "       플레이 해주셔서 감사합니다!     ",
