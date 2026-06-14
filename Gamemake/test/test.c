@@ -57,6 +57,7 @@ void print_ascii_file(const char* filename, int start_x, int start_y);
 int menu = 1;
 int isRunning = 1;
 char playerName[50] = "Player";
+int finalScore = 0;
 
 // 게임 중 매 라운드마다 무작위로 나올 '선택지 정보'를 하나로 묶어둔 구조체 양식입니다.
 typedef struct
@@ -624,6 +625,7 @@ int Gamestart(void)
 
     int hp = 100;
     int score = 0;
+    finalScore = 0;
     int key = 0;
 
     while (hp > 0)
@@ -917,6 +919,7 @@ int Gamestart(void)
         }
 
         score += 1;
+        finalScore = score;
 
         system("cls");
 
@@ -943,6 +946,8 @@ int Gamestart(void)
             _getch();
         }
     }
+
+    finalScore = score;
 
     system("cls");
     set_color(FONT_COLOR_RED); move_cursor(95, 12); printf("GAME OVER");
@@ -1007,22 +1012,27 @@ int Gameover(void)
 
             if (line_y >= 0 && line_y < SCREEN_HEIGHT)
             {
-                int visual_len = calculate_visual_length(credits[j]);
+                char formatted_line[256];
+
+                if (j == 9)
+                {
+                    sprintf(formatted_line, credits[j], playerName);
+                }
+                else if (j == 10)
+                {
+                    sprintf(formatted_line, credits[j], finalScore);
+                }
+                else
+                {
+                    strcpy(formatted_line, credits[j]);
+                }
+
+                int visual_len = calculate_visual_length(formatted_line);
                 int line_x = ((SCREEN_WIDTH - visual_len) / 2) + 40;
                 if (line_x < 1) line_x = 1;
 
                 move_cursor(line_x, line_y);
-
-                if (j == 9)
-                {
-                    char formatted_line[256];
-                    sprintf(formatted_line, credits[j], playerName);
-                    printf("%s", formatted_line);
-                }
-                else
-                {
-                    printf("%s", credits[j]);
-                }
+                printf("%s", formatted_line);
             }
         }
 
