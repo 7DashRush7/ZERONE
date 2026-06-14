@@ -51,6 +51,7 @@ int Gameover(void);
 void cleanup_console(void);
 int calculate_visual_length(const char* str);
 void get_content_stats(const char* str, int* visual_prefix, int* visual_content);
+void print_ascii_file(const char* filename, int start_x, int start_y);
 
 // 게임 전체에서 공유하며 사용할 전역 변수들입니다.
 int menu = 1;
@@ -77,8 +78,8 @@ Choice choices[] =
     { {"  _||_   ", " |    |  ", " |    |  ", " |    |  ", " |____|  ", "         "}, "%d층에서 떨어졌다.", 2, 10 },
     { {"  ::    ::  ", ": ::::::::::","..::::::::::"," :::::::::: ","   ::::::   ","     ::     "}, "앞에 커플이 지나가는 걸 본다.", 4, 10},
     { {
-        "       ***++++++++#*++++++++**       ",
-        "       #**++++++++**++++++++**       ",
+        "       ***++++++++#*++++++++** ",
+        "       #**++++++++**++++++++** ",
         " #***********************************",
         " ***********************************#",
         " *****%@@@@%*************#@@@@@%**** ",
@@ -105,6 +106,25 @@ Choice choices[] =
 
 int num_choices = sizeof(choices) / sizeof(Choice);
 CHAR_INFO savedScreen[SCREEN_WIDTH * SCREEN_HEIGHT];
+
+// === [ 함수 ] 텍스트 파일(아스키아트) 불러와서 출력 ===
+void print_ascii_file(const char* filename, int start_x, int start_y) {
+    FILE* file = fopen(filename, "r");
+    if (file != NULL) {
+        char buffer[1024];
+        int y = start_y;
+        while (fgets(buffer, sizeof(buffer), file)) {
+            buffer[strcspn(buffer, "\r\n")] = 0; // 줄바꿈 문자 제거
+            move_cursor(start_x, y++);
+            printf("%s", buffer);
+        }
+        fclose(file);
+    }
+    else {
+        move_cursor(start_x, start_y);
+        printf("[오류] '%s' 파일을 불러올 수 없습니다.\n", filename);
+    }
+}
 
 void save_console_screen()
 {
@@ -202,10 +222,10 @@ void ShowLogo(void)
        " WWW   WWWBB                                        ",
        " WWW   WWWBB                                        ",
        " WWW   WWWBB  XXXXXX  XXXXX  XXXXX                  ",
-       "  WWWWWWWBB       X   X   X  X                     ",
-       "    BBBBB        X    XXXXX  XXXXX                 ",
-       "                X     X   X  X                    ",
-       "              XXXXXX  X   X  XXXXX                ",
+       "  WWWWWWWBB       X   X   X  X                      ",
+       "    BBBBB        X    XXXXX  XXXXX                  ",
+       "                X     X   X  X                      ",
+       "              XXXXXX  X   X  XXXXX                  ",
        "                                                    ",
        "                 XXX   X   X  XXXXX                 ",
        "                X   X  XX  X  X                     ",
@@ -589,6 +609,14 @@ int Gamestart(void)
         gotoxy(start_x, current_y); printf("오류: ta.txt 파일을 찾을 수 없습니다.\n"); Sleep(2000);
     }
 
+    int random_bgm = rand() % 3; // 0 또는 1 생성
+    if (random_bgm == 0) {
+        PlaySound(TEXT("White Hats - Wayne Jones_[cut_99sec].wav"), NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
+    }
+    else  {
+        PlaySound(TEXT("Propellerheads - Spybreak!_[cut_240sec].wav"), NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
+    }
+
     system("mode con cols=120 lines=30");
     system("cls");
 
@@ -616,7 +644,6 @@ int Gamestart(void)
             right_n = (rand() % (choices[right_idx].max_damage - choices[right_idx].min_damage + 1)) + choices[right_idx].min_damage;
         }
 
-        // [버그 수정] 작성자분의 넓은 터미널 환경을 반영해 인게임 기준 중앙 좌표를 60 -> 100으로 대폭 보정 (오른쪽으로 밀기)
         int center_x = 100;
         int left_center = center_x - 35;  // 65
         int right_center = center_x + 35; // 135
@@ -683,7 +710,7 @@ int Gamestart(void)
                 while (1)
                 {
                     set_color(BG_COLOR_BLACK); move_cursor(20 + 40, 7);
-                    printf("                                                                                                                                                                                                        \n                                                                                                                                                                                                        \n                                                                                                                                                                                                        \n                                                                                                                                                                                                        \n                                                                                                                                                                                                        \n                                                                                                                                                                                                        \n                                                                                                                                                                                                        \n");
+                    printf("                                                                                                                                                                                                                                                                          \n                                                                                                                                                                                                                                                                          \n                                                                                                                                                                                                                                                                          \n                                                                                                                                                                                                                                                                          \n                                                                                                                                                                                                                                                                          \n                                                                                                                                                                                                                                                                          \n                                                                                                                                                                                                                                                                          \n");
 
                     set_color(FONT_COLOR_RED); move_cursor(center_x - 12, 12); printf("게임을 중지하시겠습니까?");
                     move_cursor(center_x - 22, 15); printf("게임을 계속하려면 t, 중지하려면 r를 누르시오.");
@@ -702,7 +729,11 @@ int Gamestart(void)
                     }
                 }
             }
-            else if (key == 27) { exit(0); }
+            else if (key == 27)
+            {
+                // Ignore ESC on the choice screen so it does not close the game.
+                continue;
+            }
         }
 
         int damage = 0;
@@ -723,6 +754,126 @@ int Gamestart(void)
             damage = (rand() % (max - min + 1)) + min;
         }
 
+        // ==========================================
+        // [ 신규 코드 ] 고양이 참참참 미니게임 시작
+        // ==========================================
+        if (strstr(choices[selected_idx].text, "귀여운 길고양이를 쓰다듬는다.") != NULL)
+        {
+            PlaySound(TEXT("Misirlou Pulp Fiction Theme_[cut_134sec].wav"), NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
+
+            // 전체화면(F11) 레이아웃이 깨지지 않도록 콘솔 버퍼를 매우 넓게(200칸) 확장합니다.
+            system("mode con cols=200 lines=70");
+            system("cls");
+
+            // 게임의 중앙 좌표를 더 파격적으로 우측(110)으로 잡았습니다.
+            int mini_center = 110;
+
+            // 1. 고양이 중앙 출력 (110 기준으로 약 29칸 좌측으로 당겨야 딱 중앙 정렬됨)
+            print_ascii_file("ascii-art (5).txt", mini_center - 29, 2);
+
+            // 2. 기본 손 모양 중앙 출력 (마찬가지로 아스키아트 길이 보정)
+            print_ascii_file("ascii-art (6).txt", mini_center - 29, 30);
+
+            int player_dir = 0;
+            set_color(FONT_COLOR_WHITE);
+
+            // 안내 문구를 중앙에 배치
+            const char* prompt_msg = "고양이와 참참참! 방향을 선택하세요 (1: 오른쪽, 2: 중앙, 3: 왼쪽) : ";
+            int p_len = calculate_visual_length(prompt_msg);
+            move_cursor(mini_center - (p_len / 2), 65);
+            printf("%s", prompt_msg);
+
+            // 플레이어 입력 받기
+            while (1)
+            {
+                if (scanf("%d", &player_dir) == 1 && player_dir >= 1 && player_dir <= 3) {
+                    while (getchar() != '\n');
+                    break;
+                }
+                while (getchar() != '\n');
+
+                const char* error_msg = "잘못된 입력입니다. 1, 2, 3 중 하나만 입력해주세요: ";
+                int err_len = calculate_visual_length(error_msg);
+                move_cursor(mini_center - (err_len / 2), 66);
+                set_color(FONT_COLOR_RED);
+                printf("%s", error_msg);
+                set_color(FONT_COLOR_WHITE);
+            }
+
+            const char* wait_msg = "3초 뒤 결과가 공개됩니다...";
+            int w_len = calculate_visual_length(wait_msg);
+            move_cursor(mini_center - (w_len / 2), 68);
+            set_color(FONT_COLOR_YELLOW);
+            printf("%s", wait_msg);
+            Sleep(3000);
+
+            system("cls");
+
+            // 고양이 방향 난수 생성 (1: 오른쪽, 2: 중앙, 3: 왼쪽)
+            int cat_dir = (rand() % 3) + 1;
+
+            // 고양이 방향에 맞춰 파격적으로 X좌표 이동
+            int cat_x = mini_center - 29; // 중앙 고정점
+            if (cat_dir == 1) cat_x = mini_center + 15; // 오른쪽으로 확 이동
+            else if (cat_dir == 3) cat_x = mini_center - 75; // 왼쪽으로 확 이동
+
+            // 결과 화면 - 고양이가 선택한 방향으로 휙 이동하여 출력됨
+            print_ascii_file("ascii-art (5).txt", cat_x, 2);
+
+            set_color(FONT_COLOR_BRIGHTMAGENTA);
+            move_cursor(mini_center - 10, 28);
+            if (cat_dir == 1) printf("고양이: (오른쪽 휙!) =>");
+            else if (cat_dir == 2) printf("고양이: (가만히 중앙)");
+            else printf("고양이: <= (왼쪽 휙!)");
+
+            // 플레이어 선택 손 모양 중앙 출력
+            if (player_dir == 1) print_ascii_file("ascii-art (8).txt", mini_center - 29, 30);      // 오른쪽 손
+            else if (player_dir == 2) print_ascii_file("ascii-art (6).txt", mini_center - 29, 30); // 중앙 손
+            else if (player_dir == 3) print_ascii_file("ascii-art (7).txt", mini_center - 29, 30); // 왼쪽 손
+
+            set_color(FONT_COLOR_WHITE);
+
+            // 승패 판정 로직
+            if (player_dir == cat_dir)
+            {
+                // [수정] 성공 시 기존 브금을 멈추고 cat.wav(고양이 소리) 재생
+                PlaySound(TEXT("cat.wav"), NULL, SND_FILENAME | SND_ASYNC);
+                const char* win_msg = "참참참 성공! 고양이가 기분 좋게 그르릉 거립니다. (HP 15 회복)";
+                int msg_len = calculate_visual_length(win_msg);
+                move_cursor(mini_center - (msg_len / 2), 66);
+                set_color(FONT_COLOR_GREEN);
+                printf("%s", win_msg);
+                damage = -15;
+            }
+            else
+            {
+                // 실패 시 하악질 소리 재생 
+                PlaySound(TEXT("angry_cat.wav"), NULL, SND_FILENAME | SND_ASYNC);
+                int cat_damage = (rand() % 11) + 10;
+                char lose_msg[128];
+                sprintf(lose_msg, "참참참 실패! 고양이가 하악질을 하며 할큅니다. (HP %d 감소)", cat_damage);
+                int msg_len = calculate_visual_length(lose_msg);
+                move_cursor(mini_center - (msg_len / 2), 66);
+                set_color(FONT_COLOR_RED);
+                printf("%s", lose_msg);
+                damage = cat_damage;
+            }
+
+            Sleep(3000);
+            system("mode con cols=120 lines=30"); // 원래 창 크기로 복구
+            system("cls");
+
+            if (random_bgm == 0) {
+                PlaySound(TEXT("White Hats - Wayne Jones_[cut_99sec].wav"), NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
+            }
+            else {
+                PlaySound(TEXT("Propellerheads - Spybreak!_[cut_240sec].wav"), NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
+            }
+
+
+        }
+        // ==========================================
+
         hp -= damage;
 
         if (hp > 100)
@@ -730,19 +881,39 @@ int Gamestart(void)
             hp = 100;
         }
 
-        if (strstr(choices[selected_idx].text, "귀여운 길고양이를 쓰다듬는다.") != NULL)
-        {
-            PlaySound(TEXT("angry_cat.wav"), NULL, SND_FILENAME | SND_ASYNC);
-        }
-
         if (strstr(choices[selected_idx].text, "수상할 정도로 빨간 버튼을 누른다.") != NULL)
         {
+            // 효과음 재생
             PlaySound(TEXT("boom.wav"), NULL, SND_FILENAME | SND_ASYNC);
+             // 효과음이 대략 2초라고 가정
+            // 다시 BGM 루프 재생
+            // (현재 재생 중이던 BGM 파일명을 다시 넣어줍니다)
+            if (random_bgm == 0) 
+            {
+                Sleep(1900);
+                PlaySound(TEXT("White Hats - Wayne Jones_[cut_99sec].wav"), NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
+            }
+            else {
+                Sleep(1900);
+                PlaySound(TEXT("Propellerheads - Spybreak!_[cut_240sec].wav"), NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
+            }
+
         }
 
         if (strstr(choices[selected_idx].text, "태양을 맨눈으로 10초 동안 바라본다.") != NULL)
         {
             PlaySound(TEXT("myeye!.wav"), NULL, SND_FILENAME | SND_ASYNC);
+            
+            // 다시 BGM 루프 재생
+            // (현재 재생 중이던 BGM 파일명을 다시 넣어줍니다)
+            if (random_bgm == 0) {
+                Sleep(1900);
+                PlaySound(TEXT("White Hats - Wayne Jones_[cut_99sec].wav"), NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
+            }
+            else {
+                Sleep(1900);
+                PlaySound(TEXT("Propellerheads - Spybreak!_[cut_240sec].wav"), NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
+            }
         }
 
         score += 1;
@@ -804,8 +975,8 @@ int Gameover(void)
         "--------------------------------------",
         "          [ PLAYER SCORE ]            ",
         "",
-        "          플레이어: %s",
-        "          최종 점수: %d 점",
+        "       플레이어: %s",
+        "       최종 점수: %d 점",
         "--------------------------------------",
         "",
         "           [ DEVELOPERS ]             ",
@@ -826,6 +997,7 @@ int Gameover(void)
 
     for (int i = SCREEN_HEIGHT; i >= -num_lines; i--)
     {
+
         printf("\x1b[2J\x1b[H");
         set_color(FONT_COLOR_WHITE);
 
@@ -836,7 +1008,6 @@ int Gameover(void)
             if (line_y >= 0 && line_y < SCREEN_HEIGHT)
             {
                 int visual_len = calculate_visual_length(credits[j]);
-                // [버그 수정] 게임 오버 화면도 넓은 창에 맞게 중앙축을 100으로 이동 (+40)
                 int line_x = ((SCREEN_WIDTH - visual_len) / 2) + 40;
                 if (line_x < 1) line_x = 1;
 
