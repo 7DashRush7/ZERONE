@@ -415,7 +415,8 @@ int RenderTitle(void)
         if (menu < 4) menu++;
         break;
     case 27:
-        isRunning = 0;
+        return 4;
+        //isRunning = 0;
         break;
     case 13:
         if (menu >= 1 && menu <= 4) return menu;
@@ -560,7 +561,8 @@ int People(void)
             return 0;
         }
         else if (ch == 27) {
-            exit(0);
+            return 4;
+            //exit(0);
         }
     }
 
@@ -619,9 +621,9 @@ int Manual(void)
             set_color(FONT_COLOR_RED); move_cursor(content_x + 20, body_y + 3); printf("HP");
             set_color(FONT_COLOR_WHITE); printf("가 0 이하가 되기 전까지 최대한 많은 턴을 버티는 게임입니다.");
 
-            move_cursor(content_x + 30, body_y + 5); printf("매 턴마다 2개 또는 3개의 선택지가 나옵니다.");
-            move_cursor(content_x + 32, body_y + 6); printf("선택지 안의 숫자는 무작위로 정해집니다.");
-            move_cursor(content_x + 32, body_y + 7); printf("4초 안에 선택하지 않을 시 자동 선택 됩니다.");
+            move_cursor(content_x + 33, body_y + 5); printf("매 턴마다 2개의 선택지가 나옵니다.");
+            move_cursor(content_x + 31, body_y + 6); printf("선택지 안의 숫자는 무작위로 정해집니다.");
+            move_cursor(content_x + 30, body_y + 7); printf("4초 안에 선택하지 않을 시 자동 선택 됩니다.");
             move_cursor(content_x + 30, body_y + 8); printf("선택한 행동에 따라 ");
 
             set_color(FONT_COLOR_RED); printf("HP"); set_color(FONT_COLOR_WHITE); printf("가 다르게 감소합니다.");
@@ -664,7 +666,8 @@ int Manual(void)
             if (Manual_page < 2) { Manual_page = Manual_page + 1; }
             break;
         case 27:
-            exit(0);
+            return 4;
+            //exit(0);
             break;
         }
     }
@@ -948,7 +951,8 @@ int Gamestart(void)
             }
             else if (key == 27)
             {
-                continue;
+                return 4;
+                //continue;
             }
         }
         int damage = 0;
