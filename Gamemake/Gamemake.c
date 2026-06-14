@@ -1,20 +1,28 @@
-#pragma execution_character_set("utf-8") // 콘솔 출력 시 한글 깨짐을 완벽하게 방지하기 위한 UTF-8 인코딩 설정
-#define _CRT_SECURE_NO_WARNINGS          // fopen 등 C 표준 함수의 보안 경고(C4996)를 무시하기 위한 매크로 정의
+// [각주 1] Visual Studio와 콘솔 출력 인코딩 설정: 한글 출력이 깨지지 않도록 UTF-8 환경을 맞춥니다.
+#pragma execution_character_set("utf-8") // 콘솔 창에서 한글이 깨지는 현상을 방지하기 위해 출력 인코딩을 UTF-8로 지정합니다.
+// [각주 2] MSVC 보안 경고 완화: 수업/실습 코드에서 fopen, scanf 같은 표준 C 함수를 편하게 쓰기 위한 설정입니다.
+#define _CRT_SECURE_NO_WARNINGS          // fopen 등의 표준 함수 사용 시 비주얼 스튜디오에서 보안 경고(에러)가 나는 것을 막아줍니다.
 
-#include <stdio.h>    // 표준 입출력 함수(printf, fopen 등)를 사용하기 위한 헤더 파일
-#include <string.h>   // 문자열 처리 함수(strlen, strstr 등)를 사용하기 위한 헤더 파일
-#include <windows.h>  // 윈도우 API(콘솔 제어, Sleep, 색상 변경 등)를 사용하기 위한 헤더 파일
-#include <conio.h>    // 콘솔 입출력 함수(_getch 등)를 사용하기 위한 헤더 파일
-#include <stdlib.h>   // 난수 생성(rand, srand) 및 시스템 명령어(system)를 위한 헤더 파일
-#include <time.h>     // 시간 관련 함수(time)를 사용하여 난수 시드를 설정하기 위한 헤더 파일
+// [각주 3] 표준/Windows 헤더 포함: 입출력, 문자열, 콘솔 제어, 키 입력, 난수, 시간, 사운드 기능을 불러옵니다.
+#include <stdio.h>    // printf(출력), fopen(파일 열기) 같은 기본적인 입출력 함수들을 쓰기 위해 가져옵니다.
+#include <string.h>   // strlen(길이 계산), strstr(글자 찾기) 같은 문자열 처리 함수들을 쓰기 위해 가져옵니다.
+#include <windows.h>  // SetConsoleCursorPosition(커서 이동) 등 윈도우 시스템 제어 기능을 쓰기 위해 가져옵니다.
+#include <conio.h>    // _getch(키보드 입력 실시간 감지) 함수를 사용하기 위해 가져옵니다.
+#include <stdlib.h>   // rand(랜덤 숫자), system(명령어 실행), exit(종료) 함수를 쓰기 위해 가져옵니다.
+#include <time.h>     // time(현재 시간) 함수를 사용하여 매번 다른 랜덤 시드 값을 주기 위해 가져옵니다.
+#include <mmsystem.h> // PlaySound 함수를 이용해 .wav 음원을 재생하기 위해 가져옵니다.
 
-#define COLOR_RESET "\x1b[0m" 
-// 콘솔 텍스트 색상을 기본값으로 초기화하는 ANSI 이스케이프 시퀀스
+// [각주 4] 사운드 라이브러리 연결: PlaySound를 쓰기 위해 winmm.lib를 링커에 추가합니다.
+#pragma comment(lib, "winmm.lib") // Windows 멀티미디어 사운드 라이브러리를 링크 서브시스템에 등록합니다.
 
-// 콘솔 텍스트 폰트(글자) 및 배경 색상을 지정하기 위한 ANSI 색상 코드 매크로 정의
+// [각주 5] ANSI 색상 리셋 코드: 색상 변경 뒤 콘솔 상태를 기본값으로 되돌릴 때 씁니다.
+#define COLOR_RESET "\x1b[0m" // 변경된 글자나 배경 색상을 다시 콘솔 기본 색상으로 되돌리는 특수 문자열입니다.
+
+// [각주 6] 색상 상수 묶음: 숫자 코드를 이름으로 감싸 메뉴, 안내문, 결과 화면의 색상을 읽기 쉽게 만듭니다.
+// 콘솔창의 글자 색상과 배경 색상을 간편하게 바꾸기 위해 ANSI 코드를 숫자로 정의해 둔 것입니다.
 #define FONT_COLOR_BLACK 30
 #define BG_COLOR_BLACK 40
-#define FONT_COLOR_RED 316
+#define FONT_COLOR_RED 31
 #define BG_COLOR_RED 41
 #define FONT_COLOR_GREEN 32
 #define BG_COLOR_GREEN 42
@@ -29,349 +37,460 @@
 #define FONT_COLOR_WHITE 37
 #define BG_COLOR_WHITE 47
 
-#define Backspace 8 // 키보드 Backspace 키의 아스키코드 값 정의
+// [각주 7] 키/화면 크기 상수: 입력 처리와 콘솔 레이아웃 계산에 반복해서 쓰이는 값을 모아 둡니다.
+#define Backspace 8 // 키보드의 백스페이스 키가 가지는 고유 아스키코드 번호(8)를 알아보기 쉽게 이름을 붙인 것입니다.
 
-#define SCREEN_WIDTH 120  // 화면 캡처 및 복원을 위한 콘솔 가로 최대 크기
-#define SCREEN_HEIGHT 30  // 화면 캡처 및 복원을 위한 콘솔 세로 최대 크기
+#define SCREEN_WIDTH 120  // 이 프로그램이 사용하는 가상 콘솔 화면의 최대 가로 칸(폭)을 120칸으로 정합니다.
+#define SCREEN_HEIGHT 30  // 이 프로그램이 사용하는 가상 콘솔 화면의 최대 세로 줄(높이)을 30줄로 정합니다.
+#define SAVE_SCREEN_WIDTH 240
+#define SAVE_SCREEN_HEIGHT 80
 
-// 프로그램에서 사용할 함수들의 원형(Prototype) 선언부
-void set_color(int code);                 // 텍스트 색상을 변경하는 함수
-int move_cursor(int x, int y);            // 콘솔 화면의 특정 좌표로 커서를 이동시키는 함수 (ANSI 방식)
-void gotoxy(int x, int y);                // 콘솔 화면의 특정 좌표로 커서를 이동시키는 함수 (Windows API 방식)
-void ShowLogo(void);                      // 게임 시작 전 타이틀 로고를 보여주는 함수
-int RenderTitle(void);                    // 메인 메뉴를 출력하고 사용자의 선택을 받는 함수
-void print_member_page(const char* filename, const char* description); // 팀원 개인의 txt 파일을 읽어 출력하는 함수 (추가됨)
-void draw_final_screen(void);             // 팀원 소개의 마지막 ZERONE 로고 화면을 출력하는 함수 (추가됨)
-int People(void);                         // '만든 사람 및 팀 소개' 메뉴를 처리하는 함수 (새롭게 교체됨)
-int Manual(void);                         // '설명서' 메뉴를 처리하는 함수
-int Gamestart(void);                      // 실제 게임 플레이 로직을 담당하는 함수
-int Gameover(void);                       // 게임 오버 연출 및 프로그램 종료를 담당하는 함수
+// [각주 8] 함수 원형 선언: main보다 아래에 정의된 함수들을 컴파일러가 미리 알 수 있게 합니다.
+// 프로그램 안에서 사용할 기능(함수)들의 목차를 컴파일러에게 미리 알려주는 선언부입니다.
+void set_color(int code);
+int move_cursor(int x, int y);
+void gotoxy(int x, int y);
+void ShowLogo(void);
+int RenderTitle(void);
+void print_member_page(const char* filename, const char* description);
+void draw_final_screen(void);
+int People(void);
+int Manual(void);
+int Gamestart(void);
+int Gameover(void);
+void cleanup_console(void);
+int calculate_visual_length(const char* str);
+void get_content_stats(const char* str, int* visual_prefix, int* visual_content);
+void print_ascii_file(const char* filename, int start_x, int start_y);
 
-// 게임 전역 변수 설정
-int menu = 1;       // 현재 선택된 메인 메뉴 번호 (기본값 1)
-int isRunning = 1;  // 게임 메인 루프 실행 여부 (0이 되면 프로그램 종료)
+// 게임 전체에서 공유하며 사용할 전역 변수들입니다.
+// [각주 9] 전역 상태: 메뉴 위치, 실행 여부, 플레이어 이름, 최종 점수처럼 여러 함수가 공유하는 값을 저장합니다.
+int menu = 1;
+int isRunning = 1;
+char playerName[50] = "Player";
+int finalScore = 0;
 
-// 각 라운드마다 등장할 선택지 데이터를 담는 구조체 선언
+// [각주 10] 선택지 구조체 설계: ASCII 그림, 문장, 최소/최대 데미지를 하나의 선택지 데이터로 묶습니다.
+// 게임 중 매 라운드마다 무작위로 나올 '선택지 정보'를 하나로 묶어둔 구조체 양식입니다.
 typedef struct
 {
-    const char* art[6]; // 화면에 출력될 아스키아트 배열 (최대 6줄)
-    const char* text;   // 선택지에 대한 설명 텍스트
-    int min_damage;     // 무작위 데미지의 최솟값 (또는 n층 데미지 계산 시 n의 최솟값)
-    int max_damage;     // 무작위 데미지의 최댓값 (또는 n층 데미지 계산 시 n의 최댓값)
+    const char* art[6]; // 선택지 위에 그려질 아스키아트 그림 데이터입니다. (최대 6줄까지 저장)
+    const char* text;   // 선택지에 대한 설명 글자입니다. 
+    int min_damage;     // 이 행동을 골랐을 때 최소한으로 받는 피해 체력량입니다. 
+    int max_damage;     // 이 행동을 골랐을 때 최대한으로 받는 피해 체력량입니다. 
 } Choice;
 
-// 게임 내에서 사용할 선택지 목록 배열 선언 (새로운 선택지를 이 배열에 계속 추가 가능)
+// [각주 11] 선택지 데이터 테이블: 게임 라운드에서 무작위로 보여 줄 이벤트와 HP 변화 범위를 정의합니다.
+// 게임에 등장하게 될 기상천외한 선택지들의 실제 데이터들을 모아놓은 배열입니다.
 Choice choices[] =
 {
-    // { {아스키아트 6줄}, "텍스트 문구", 최소 데미지, 최대 데미지 }
     { {"  /\\_/\\  ", " ( o.o ) ", "  > ^ <  ", "         ", "         ", "         "}, "귀여운 길고양이를 쓰다듬는다.", 1, 5 },
     { {"   ___   ", "  / _ \\  ", " | (_) | ", "  \\___/  ", "         ", "         "}, "수상할 정도로 빨간 버튼을 누른다.", 3, 9 },
     { {"  ====   ", " |    |  ", " |    |  ", "  ====   ", "         ", "         "}, "자판기 밑에서 동전을 줍는다.", 0, 2 },
     { {"   \\|/   ", "  - O -  ", "   /|\\   ", "         ", "         ", "         "}, "태양을 맨눈으로 10초 동안 바라본다.", 8, 12 },
     { {"  [___]  ", "  |   |  ", "  |___|  ", "         ", "         ", "         "}, "유통기한이 3년 지난 통조림을 먹는다.", 5, 15 },
-
-    // 구조체 변경 없이, 텍스트 안에 '%d'가 포함되어 있으면 프로그램이 이를 n층 변수로 자동 인식하여 처리합니다.
     { {"  _||_   ", " |    |  ", " |    |  ", " |    |  ", " |____|  ", "         "}, "%d층에서 떨어졌다.", 2, 10 },
-    { { "                                                  " }, "%d의 속도로 달리는 차에 치인다.", 20, 50 }
+    { {"  ::    ::  ", ": ::::::::::","..::::::::::"," :::::::::: ","   ::::::   ","     ::     "}, "앞에 커플이 지나가는 걸 본다.", 4, 10},
+    { {
+        "       ***++++++++#*++++++++** ",
+        "       #**++++++++**++++++++** ",
+        " #***********************************",
+        " ***********************************#",
+        " *****%@@@@%*************#@@@@@%**** ",
+        " #***#@#   @@************@@   #@#***#",}, "%d의 속도로 달리는 차에 치인다.", 20, 50},
+    { { "  _.-._  ", " / * * \\\\ ", " |  * | ", " '-._.-' ", "   | |   ", "   |_|   " }, "형광빛이 나는 정체불명의 버섯을 씹어먹는다.", 5, 15 },
+    { { "   ___   ", "  (o_o)  ", " /|   |\\\\ ", "  |___|  ", "   ^ ^   ", "         " }, "근육질 비둘기가 날아와 내 빵을 뺏어간다.", 3, 7 },
+    { { "   \\\\_    ", "   /     ", "  /___   ", "    /    ", "   /     ", "  * " }, "마른하늘에 떨어지는 벼락을 피하지 못했다.", 20, 40 },
+    { { "  ___    ", " |   |   ", " |SSR|   ", " |___|   ", "         ", "         " }, "주운 스마트폰으로 가챠를 돌렸으나 대폭사했다.", 2, 8 },
+    { { "  _^_    ", " /_ _\\\\   ", "  | |    ", "  | |    ", "         ", "         " }, "지나가던 외계인과 눈이 마주쳐 기가 빨린다.", 8, 15 },
+    { { "         ", "  ____   ", " /o  o\\\\  ", " \\\\____/  ", "         ", "         " }, "발밑에 있던 슬라임을 밟고 화려하게 미끄러졌다.", 1, 5 },
+    { { "         ", "         ", "    _    ", "  _| |_  ", " |_____| ", "  !!!    " }, "문지방에 새끼발가락을 무자비하게 찧었다.", 15, 25 },
+    { { "   ( (   ", "    ) )  ", "  ____   ", " |    |  ", " |____|  ", "         " }, "새로 산 흰 옷에 뜨거운 아메리카노를 쏟는다.", 5, 10 },
+    { { " _______ ", " | >_  | ", " |ERROR| ", " |_____| ", "  =====  ", "         " }, "C++ 컴파일 중 원인을 알 수 없는 오류가 뿜어져 나온다.", 8, 15 },
+    { { "  ___    ", " |   |   ", " |___|   ", "   \\\\    ", " (x_x)   ", "         " }, "누워서 스마트폰을 보다 얼굴에 정통으로 떨어뜨렸다.", 3, 8 },
+    { { "  ____   ", " |    |  ", " |____|  ", "  O  O   ", "   ==3   ", "         " }, "눈앞에서 타야 할 버스가 문을 닫고 무심하게 출발해버렸다.", 2, 6 },
+    // === [ 회복 이벤트 ] ===
+    { { "  ___    ", " |   |   ", " |ZRO|   ", " |___|   ", "         ", "         " }, "자판기에서 뽑은 제로 슈거 콜라를 시원하게 들이킨다.", -10, -5 },
+    { { "  ___    ", " | + |   ", " |___|   ", "         ", "         ", "         " }, "버려진 구급상자에서 뽀로로 반창고를 찾아 붙인다.", -12, -7 },
+    { { "  ++++   ", "  +HP+  ", "  ++++   ", "         ", "         ", "         " }, "약국에서 진통제를 복용한다.", -15, -10 },
+    { { "  [###]  ", "  |   |  ", "  |___|  ", "         ", "         ", "         " }, "편의점에서 이온음료를 마신다.", -8, -3 },
+    { { "  Zzz..  ", "  (-_-)  ", "  /| |\\  ", "         ", "         ", "         " }, "잠깐 앉아서 휴식을 취한다.", -8, -4 },
+
 };
 
-// 위에서 선언한 선택지 배열의 전체 크기를 개별 구조체의 크기로 나누어, 총 선택지의 개수를 계산
+// [각주 12] 파생 전역 데이터: 선택지 개수와 콘솔 화면 저장용 버퍼를 준비합니다.
 int num_choices = sizeof(choices) / sizeof(Choice);
+CHAR_INFO savedScreen[SAVE_SCREEN_WIDTH * SAVE_SCREEN_HEIGHT];
+int savedScreenWidth = SCREEN_WIDTH;
+int savedScreenHeight = SCREEN_HEIGHT;
 
-// 콘솔 화면의 글자와 색상 정보를 백업하기 위한 버퍼 배열 선언
-CHAR_INFO savedScreen[SCREEN_WIDTH * SCREEN_HEIGHT];
+// [각주 13] ASCII 파일 출력 함수: 외부 텍스트 파일을 읽어 지정한 콘솔 좌표에 한 줄씩 출력합니다.
+// === [ 함수 ] 텍스트 파일(아스키아트) 불러와서 출력 ===
+void print_ascii_file(const char* filename, int start_x, int start_y) {
+    FILE* file = fopen(filename, "r");
+    if (file != NULL) {
+        char buffer[1024];
+        int y = start_y;
+        while (fgets(buffer, sizeof(buffer), file)) {
+            buffer[strcspn(buffer, "\r\n")] = 0; // 줄바꿈 문자 제거
+            move_cursor(start_x, y++);
+            printf("%s", buffer);
+        }
+        fclose(file);
+    }
+    else {
+        move_cursor(start_x, start_y);
+        printf("[오류] '%s' 파일을 불러올 수 없습니다.\n", filename);
+    }
+}
 
-// 현재 콘솔 화면의 상태(글자, 색상 등)를 배열에 저장하는 함수
+// [각주 14] 화면 저장 함수: 일시정지 같은 임시 화면을 띄우기 전 현재 콘솔 내용을 버퍼에 복사합니다.
 void save_console_screen()
 {
-    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE); // 현재 출력 중인 콘솔의 핸들을 가져옴
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
 
-    COORD bufferSize = { SCREEN_WIDTH, SCREEN_HEIGHT }; // 저장할 버퍼의 가로, 세로 크기를 지정
-    COORD bufferCoord = { 0, 0 }; // 배열 내에서 화면 정보를 저장하기 시작할 기준 좌표 (0,0)
-    SMALL_RECT readRegion = { 0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1 }; // 콘솔 창에서 실제로 읽어올 사각형 영역 지정
+    savedScreenWidth = SCREEN_WIDTH;
+    savedScreenHeight = SCREEN_HEIGHT;
 
-    // 콘솔 창의 내용을 읽어와서 savedScreen 배열에 저장하는 Windows API 함수 호출
-    ReadConsoleOutput(
-        hConsole,
-        savedScreen,
-        bufferSize,
-        bufferCoord,
-        &readRegion
-    );
+    if (GetConsoleScreenBufferInfo(hConsole, &csbi))
+    {
+        savedScreenWidth = csbi.srWindow.Right - csbi.srWindow.Left + 1;
+        savedScreenHeight = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
+    }
+
+    if (savedScreenWidth > SAVE_SCREEN_WIDTH) savedScreenWidth = SAVE_SCREEN_WIDTH;
+    if (savedScreenHeight > SAVE_SCREEN_HEIGHT) savedScreenHeight = SAVE_SCREEN_HEIGHT;
+
+    COORD bufferSize = { (SHORT)savedScreenWidth, (SHORT)savedScreenHeight };
+    COORD bufferCoord = { 0, 0 };
+    SMALL_RECT readRegion = { 0, 0, (SHORT)(savedScreenWidth - 1), (SHORT)(savedScreenHeight - 1) };
+    ReadConsoleOutput(hConsole, savedScreen, bufferSize, bufferCoord, &readRegion);
 }
 
-// 이전에 저장해 두었던 콘솔 화면 상태를 다시 콘솔 창에 복원하는 함수
+// [각주 15] 화면 복구 함수: 저장해 둔 콘솔 내용을 다시 그려 게임 화면으로 돌아오게 합니다.
 void restore_console_screen()
 {
-    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE); // 현재 출력 중인 콘솔의 핸들을 가져옴
-
-    COORD bufferSize = { SCREEN_WIDTH, SCREEN_HEIGHT }; // 복원할 버퍼의 가로, 세로 크기 지정
-    COORD bufferCoord = { 0, 0 }; // 배열 내에서 읽어오기 시작할 기준 좌표 (0,0)
-    SMALL_RECT writeRegion = { 0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1 }; // 콘솔 창에 실제로 덮어쓸 사각형 영역 지정
-
-    // savedScreen 배열에 저장되어 있는 내용을 콘솔 창에 출력하여 복원하는 Windows API 함수 호출
-    WriteConsoleOutput(
-        hConsole,
-        savedScreen,
-        bufferSize,
-        bufferCoord,
-        &writeRegion
-    );
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    COORD bufferSize = { (SHORT)savedScreenWidth, (SHORT)savedScreenHeight };
+    COORD bufferCoord = { 0, 0 };
+    SMALL_RECT writeRegion = { 0, 0, (SHORT)(savedScreenWidth - 1), (SHORT)(savedScreenHeight - 1) };
+    WriteConsoleOutput(hConsole, savedScreen, bufferSize, bufferCoord, &writeRegion);
 }
 
-// X, Y 좌표를 받아 콘솔 창의 커서 위치를 해당 좌표로 즉시 이동시키는 함수 (Windows API 방식)
+// [각주 16] 커서 이동 래퍼: Windows API 좌표 이동을 함수 하나로 감싸 반복 사용을 줄입니다.
 void gotoxy(int x, int y) {
-    COORD pos = { (SHORT)x, (SHORT)y }; // X, Y 좌표를 COORD 구조체로 변환
-    SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), pos); // 설정된 위치로 커서 이동
+    COORD pos = { (SHORT)x, (SHORT)y };
+    SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), pos);
 }
 
-// 게임 시작 시 처음으로 보여지는 제작사/로고 화면 출력 함수
+// [각주 17] 표시 폭 계산: 한글처럼 2칸을 차지하는 UTF-8 문자를 고려해 문자열의 화면상 길이를 구합니다.
+int calculate_visual_length(const char* str) {
+    int len = 0;
+    for (int i = 0; str[i] != '\0'; ) {
+        if ((str[i] & 0x80) == 0) { i += 1; len += 1; }
+        else if ((str[i] & 0xE0) == 0xC0) { i += 2; len += 2; }
+        else if ((str[i] & 0xF0) == 0xE0) { i += 3; len += 2; }
+        else { i += 4; len += 2; }
+    }
+    return len;
+}
+
+// [각주 18] 내용 폭 분석: 앞뒤 공백을 제외한 실제 글자 영역을 찾아 ASCII 아트나 제목을 중앙 정렬할 때 사용합니다.
+void get_content_stats(const char* str, int* visual_prefix, int* visual_content) {
+    int target_start = -1, target_end = -1;
+    int i = 0, current_visual = 0, start_visual = 0;
+
+    while (str[i] != '\0') {
+        int is_blank = 0, char_len = 1, vis_len = 1;
+        if (str[i] == ' ') { is_blank = 1; }
+        else if ((unsigned char)str[i] == 0xE2 && (unsigned char)str[i + 1] == 0xA0 && (unsigned char)str[i + 2] == 0x80) {
+            is_blank = 1; char_len = 3; vis_len = 2;
+        }
+        else {
+            if ((unsigned char)str[i] <= 0x7F) { char_len = 1; vis_len = 1; }
+            else if ((unsigned char)str[i] >= 0xC0 && (unsigned char)str[i] <= 0xDF) { char_len = 2; vis_len = 2; }
+            else if ((unsigned char)str[i] >= 0xE0 && (unsigned char)str[i] <= 0xEF) { char_len = 3; vis_len = 2; }
+            else { char_len = 4; vis_len = 2; }
+        }
+        if (!is_blank) {
+            if (target_start == -1) { target_start = i; start_visual = current_visual; }
+            target_end = i + char_len - 1;
+        }
+        current_visual += vis_len; i += char_len;
+    }
+    if (target_start == -1) { *visual_prefix = 0; *visual_content = 0; return; }
+
+    int content_vis = 0; i = target_start;
+    while (i <= target_end && str[i] != '\0') {
+        int char_len = 1, vis_len = 1;
+        if ((unsigned char)str[i] <= 0x7F) { char_len = 1; vis_len = 1; }
+        else if ((unsigned char)str[i] >= 0xC0 && (unsigned char)str[i] <= 0xDF) { char_len = 2; vis_len = 2; }
+        else if ((unsigned char)str[i] >= 0xE0 && (unsigned char)str[i] <= 0xEF) { char_len = 3; vis_len = 2; }
+        else { char_len = 4; vis_len = 2; }
+        content_vis += vis_len; i += char_len;
+    }
+    *visual_prefix = start_visual; *visual_content = content_vis;
+}
+
+// [각주 19] 시작 로고 화면: 색상 블록으로 로고를 그리고 Enter 입력을 기다린 뒤 본 게임으로 넘깁니다.
 void ShowLogo(void)
 {
-    printf("\x1b[2J"); // ANSI 코드를 사용하여 콘솔 화면 전체를 깔끔하게 지움
+    printf("\x1b[2J");
 
-    CONSOLE_SCREEN_BUFFER_INFO csbi; // 콘솔 창의 정보를 저장할 구조체
-    GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi); // 현재 콘솔 창의 정보를 가져옴
-
-    // 로고를 감싸는 배경 박스의 크기와 시작 좌표 설정
     int box_width = 60;
     int box_height = 24;
     int box_start_x = 37;
     int box_start_y = 5;
 
-    // 설정한 크기만큼 파란색 배경 박스를 그리는 반복문
     for (int i = 0; i < box_height; i++)
     {
-        printf("\x1b[%d;%dH", box_start_y + i, box_start_x); // 커서를 박스 시작 위치로 이동
-        printf("\x1b[44m"); // 배경색을 파란색으로 변경
+        printf("\x1b[%d;%dH", box_start_y + i, box_start_x);
+        printf("\x1b[44m");
         for (int j = 0; j < box_width; j++)
         {
-            printf(" "); // 공백을 출력하여 배경색으로 채움
+            printf(" ");
         }
-        printf("\x1b[0m"); // 색상 설정을 기본값으로 초기화
+        printf("\x1b[0m");
     }
 
-    // 출력할 로고의 형태를 문자열 배열로 정의 (W=흰색, B=검은색 텍스트, X=검은색 로고 블록)
     const char* logo[] = {
        "                                                    ",
-       "  WWWWWW                                             ",
-       " WWW   WWWBB                                       ",
-       " WWW   WWWBB                                       ",
-       " WWW   WWWBB  XXXXXX  XXXXX  XXXXX                 ",
-       "  WWWWWWWBB        X   X   X  X                    ",
-       "    BBBBB         X    XXXXX  XXXXX                ",
-       "                 X     X   X  X                    ",
-       "               XXXXXX  X   X  XXXXX                ",
+       "  WWWWWW                                            ",
+       " WWW   WWWBB                                        ",
+       " WWW   WWWBB                                        ",
+       " WWW   WWWBB  XXXXXX  XXXXX  XXXXX                  ",
+       "  WWWWWWWBB       X   X   X  X                      ",
+       "    BBBBB        X    XXXXX  XXXXX                  ",
+       "                X     X   X  X                      ",
+       "              XXXXXX  X   X  XXXXX                  ",
        "                                                    ",
-       "                 XXX   X   X  XXXXX                ",
-       "                X   X  XX  X  X                    ",
-       "                X   X  X X X  XXXXX                ",
-       "                X   X  X  XX  X                    ",
-       "                 XXX   X   X  XXXXX      WWW         ",
-       "                                       WWWWWBB       ",
-       "                                       WW WWBB       ",
-       "                                          WWBB       ",
-       "                                          WWBB       ",
-       "                                      WWWWWWWWBB     ",
-       "                                        BBBBBB       "
+       "                 XXX   X   X  XXXXX                 ",
+       "                X   X  XX  X  X                     ",
+       "                X   X  X X X  XXXXX                 ",
+       "                X   X  X  XX  X                     ",
+       "                 XXX   X   X  XXXXX      WWW        ",
+       "                                       WWWWWBB      ",
+       "                                       WW WWBB      ",
+       "                                          WWBB      ",
+       "                                          WWBB      ",
+       "                                      WWWWWWWWBB    ",
+       "                                       BBBBBB       "
     };
 
-    // 로고 텍스트의 크기 설정
     int logo_height = 21;
     int logo_width = 52;
 
-    // 파란색 박스 정중앙에 로고가 오도록 시작 좌표 계산
     int logo_start_x = box_start_x + (box_width - logo_width) / 2;
     int logo_start_y = box_start_y + (box_height - logo_height) / 2;
 
-    // 로고 배열을 순회하며 특정 알파벳에 따라 색상을 입혀서 출력
     for (int i = 0; i < logo_height; i++)
     {
-        printf("\x1b[%d;%dH", logo_start_y + i, logo_start_x); // 각 줄의 시작 위치로 이동
+        printf("\x1b[%d;%dH", logo_start_y + i, logo_start_x);
         for (int j = 0; j < logo_width; j++)
         {
             if (logo[i][j] == 'W')
             {
-                printf("\x1b[47m "); // 'W'인 경우 흰색 배경
+                printf("\x1b[47m ");
             }
             else if (logo[i][j] == 'B' || logo[i][j] == 'X')
             {
-                printf("\x1b[40m "); // 'B' 또는 'X'인 경우 검은색 배경
+                printf("\x1b[40m ");
             }
             else
             {
-                printf("\x1b[44m "); // 그 외의 공간은 파란색 배경 유지
+                printf("\x1b[44m ");
             }
         }
-        printf("\x1b[0m"); // 한 줄 출력이 끝나면 색상 초기화
+        printf("\x1b[0m");
     }
 
-    printf("\x1b[%d;1H\n", box_start_y + box_height + 1); // 박스 바깥쪽 아래로 커서 이동
+    printf("\x1b[%d;1H\n", box_start_y + box_height + 1);
 
-    move_cursor(logo_start_x + 2, logo_start_y + logo_height + 1); // 안내 문구 위치로 커서 이동
-    set_color(FONT_COLOR_WHITE); // 안내 문구 색상을 흰색으로 설정
-    printf("전체화면으로 바꾼 뒤 Enter키를 누르면 시작합니다."); // 안내 문구 출력
+    move_cursor(logo_start_x - 5, logo_start_y + logo_height + 2);
+    set_color(FONT_COLOR_WHITE);
+    printf(" F11키를 눌러 전체화면으로 바꾸고 Enter키를 누르면 시작합니다.");
 
-    int key; // 입력받은 키 값을 저장할 변수
-
-    // 사용자가 Enter 키(\r)를 누를 때까지 무한정 대기하는 루프
+    int key;
     do {
-        key = _getch(); // 키보드 입력을 하나 받음
+        key = _getch();
     } while (key != '\r');
 
-    system("cls"); // Enter 키가 입력되면 화면을 깨끗하게 지움
-
-    return 0; // 함수 종료
+    system("cls");
 }
 
-// 메인 메뉴 화면을 그리고 사용자의 방향키 선택을 처리하는 함수
+// [각주 20] 타이틀 메뉴 렌더링: 제목 파일을 읽고 메뉴 선택 상태를 색상으로 표시하며 키 입력에 따라 다음 상태를 반환합니다.
 int RenderTitle(void)
 {
-    set_color(BG_COLOR_BRIGHTMAGENTA); // 메인 타이틀의 배경색을 밝은 마젠타색으로 설정
-    set_color(FONT_COLOR_WHITE);       // 메인 타이틀의 글자색을 흰색으로 설정
+    int console_width = 210;
+    int console_height = 60;
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
 
-    // 화면 상단 중앙에 게임 제목 렌더링
-    move_cursor(52, 9);
-    printf("                       ");
-    move_cursor(52, 10);
-    printf("       이걸 죽네       ");
-    move_cursor(52, 11);
-    printf("                       ");
-
-    set_color(BG_COLOR_BLACK); // 이후 메뉴 항목들의 기본 배경색을 검은색으로 복구
-
-    // 1번 메뉴 (만든 사람 및 팀 소개) 출력. 현재 선택된 메뉴가 1번이면 배경을 노란색으로 강조
-    if (menu == 1)
+    if (GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi))
     {
-        set_color(BG_COLOR_YELLOW);
-    }
-    move_cursor(52, 13);
-    printf("  1. 만든 사람 및 팀 소개  ");
-    set_color(BG_COLOR_BLACK);
+        console_width = csbi.srWindow.Right - csbi.srWindow.Left + 1;
+        console_height = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
 
-    // 2번 메뉴 (설명서) 출력
-    if (menu == 2)
-    {
-        set_color(BG_COLOR_YELLOW);
+        if (console_width < 180 || console_height < 50)
+        {
+            system("mode con cols=210 lines=60");
+            if (GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi))
+            {
+                console_width = csbi.srWindow.Right - csbi.srWindow.Left + 1;
+                console_height = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
+            }
+        }
     }
-    move_cursor(52, 15);
-    printf("  2. 설명서  ");
-    set_color(BG_COLOR_BLACK);
 
-    // 3번 메뉴 (게임 시작) 출력
-    if (menu == 3)
-    {
-        set_color(BG_COLOR_YELLOW);
+    printf("\x1b[2J\x1b[H");
+
+    static char title_lines[40][256];
+    static int title_line_count = 0;
+    static int max_content_width = 0;
+    static int title_loaded = 0;
+
+    if (!title_loaded) {
+        FILE* f = fopen("dlrjfwnrsp.txt", "r");
+        if (f != NULL) {
+            char temp[1024];
+            while (fgets(temp, sizeof(temp), f) && title_line_count < 40) {
+                temp[strcspn(temp, "\r\n")] = 0;
+                int prefix = 0, content_w = 0;
+                get_content_stats(temp, &prefix, &content_w);
+                if (content_w > 0) {
+                    if (content_w > max_content_width) max_content_width = content_w;
+                    strcpy(title_lines[title_line_count++], temp);
+                }
+            }
+            fclose(f);
+        }
+        title_loaded = 1;
     }
-    move_cursor(52, 17);
-    printf("  3. 게임 시작  ");
-    set_color(BG_COLOR_BLACK);
 
-    // 4번 메뉴 (게임 종료) 출력
-    if (menu == 4)
-    {
-        set_color(BG_COLOR_YELLOW);
+    set_color(BG_COLOR_BLACK);
+    set_color(FONT_COLOR_GREEN);
+    move_cursor(10, 3);
+    printf("환영합니다, [%s] 님!", playerName);
+
+    set_color(FONT_COLOR_WHITE);
+    int title_start_y = 2;
+    for (int i = 0; i < title_line_count; i++) {
+        int prefix = 0, content_w = 0;
+        get_content_stats(title_lines[i], &prefix, &content_w);
+        int target_x = (SCREEN_WIDTH - max_content_width) / 2 - prefix;
+        if (target_x < 1) target_x = 1;
+        move_cursor(target_x + 65, title_start_y + i + 14);
+        printf("%s", title_lines[i]);
     }
-    move_cursor(52, 19);
-    printf("  4. 게임 종료  ");
-    set_color(BG_COLOR_BLACK);
 
-    // 화면 우측 하단에 조작법 안내 출력
+    int base_y = title_start_y + title_line_count + 2;
+    int base_x = (SCREEN_WIDTH - max_content_width) / 2 + 6;
+
+    move_cursor(base_x + 75, base_y + 14);
+    if (menu == 1) { set_color(FONT_COLOR_YELLOW); printf("▶ 1. 만든 사람 및 팀 소개"); }
+    else { set_color(FONT_COLOR_WHITE);            printf("   1. 만든 사람 및 팀 소개"); }
+
+    move_cursor(base_x + 75, base_y + 16);
+    if (menu == 2) { set_color(FONT_COLOR_YELLOW); printf("▶ 2. 설명서"); }
+    else { set_color(FONT_COLOR_WHITE);            printf("   2. 설명서"); }
+
+    move_cursor(base_x + 75, base_y + 18);
+    if (menu == 3) { set_color(FONT_COLOR_YELLOW); printf("▶ 3. 게임 시작"); }
+    else { set_color(FONT_COLOR_WHITE);            printf("   3. 게임 시작"); }
+
+    move_cursor(base_x + 75, base_y + 20);
+    if (menu == 4) { set_color(FONT_COLOR_YELLOW); printf("▶ 4. 게임 종료"); }
+    else { set_color(FONT_COLOR_WHITE);            printf("   4. 게임 종료"); }
+
     set_color(FONT_COLOR_YELLOW);
-    move_cursor(106, 27);
-    printf("↑: 위로 이동");
-    move_cursor(106, 28);
-    printf("↓: 밑으로 이동");
-    move_cursor(106, 29);
-    printf("Enter : 선택");
-    move_cursor(106, 30);
-    printf("ESC : 게임 종료");
+    int guide_x = console_width - 20;
+    int guide_y = console_height - 3;
+    if (guide_x < 1) guide_x = 1;
+    if (guide_y < 1) guide_y = 1;
+    move_cursor(guide_x, guide_y); printf("↑: 위로 이동");
+    move_cursor(guide_x, guide_y + 1); printf("↓: 밑으로 이동");
+    move_cursor(guide_x, guide_y + 2); printf("Enter : 선택");
+    move_cursor(guide_x, guide_y + 3); printf("ESC : 게임 종료");
 
-    move_cursor(106, 100); // 사용자에게 커서가 보이지 않게 구석으로 치움
+    move_cursor(1, 1);
 
-    char a = _getch(); // 사용자로부터 키보드 입력(방향키, 엔터, ESC 등)을 받음
+    int a = _getch();
 
-    // 입력받은 키에 따라 동작을 수행하는 switch 문
+    if (a == 0 || a == 224)
+    {
+        a = _getch();
+    }
+
     switch (a)
     {
-    case 72: // 위쪽 화살표(↑) 키가 입력된 경우
-        if (menu > 1) // 메뉴가 1보다 크면
-        {
-            menu = menu - 1; // 커서를 위로 한 칸 올림
-        }
+    case 72:
+        if (menu > 1) menu--;
         break;
-    case 80: // 아래쪽 화살표(↓) 키가 입력된 경우
-        if (menu < 4) // 메뉴가 4보다 작으면
-        {
-            menu = menu + 1; // 커서를 아래로 한 칸 내림
-        }
+    case 80:
+        if (menu < 4) menu++;
         break;
-
-    case 27: // ESC 키가 입력된 경우
-        isRunning = 0; // 전역 변수를 0으로 만들어 게임 루프(프로그램) 종료
+    case 27:
+        isRunning = 0;
         break;
-
-    case 13: // Enter 키가 입력된 경우
-        if (menu >= 1 && menu <= 4)
-        {
-            return menu; // 현재 커서가 위치한 메뉴의 번호를 반환하여 해당 기능 실행
-        }
+    case 13:
+        if (menu >= 1 && menu <= 4) return menu;
         break;
     }
 
-    return 0; // 특별한 선택이 없었으면 0 반환
+    return 0;
 }
 
-// -------------------------------------------------------------------------
-// [추가된 부분 1] 개별 팀원 아스키아트(txt) 및 설명을 읽어와 출력하는 함수
-// -------------------------------------------------------------------------
+// [각주 21] 팀원 소개 페이지 출력: 파일에서 소개 화면을 읽어 보여 주고 Backspace로 메뉴에 돌아오게 합니다.
 void print_member_page(const char* filename, const char* description) {
-    printf("\x1b[2J\x1b[H"); // 콘솔 화면 전체를 지우고 커서를 왼쪽 맨 위(1,1)로 이동
+    printf("\x1b[2J\x1b[H");
+    set_color(FONT_COLOR_WHITE);
 
-    FILE* file = fopen(filename, "r"); // 인자로 받은 txt 파일을 읽기 모드("r")로 염
-    if (file != NULL) { // 파일이 정상적으로 열렸다면
-        char buffer[1024]; // 파일의 내용을 한 줄씩 저장할 임시 문자열 버퍼 생성
-        while (fgets(buffer, sizeof(buffer), file)) { // 파일 끝에 도달할 때까지 한 줄씩 읽음
-            printf("%s", buffer); // 읽어온 한 줄의 아스키아트를 화면에 출력
+    FILE* file = fopen(filename, "r");
+    int y = 2;
+    if (file != NULL) {
+        char buffer[1024];
+        while (fgets(buffer, sizeof(buffer), file) && y <= 36) {
+            buffer[strcspn(buffer, "\r\n")] = 0;
+            int visual_len = calculate_visual_length(buffer);
+            int x = (SCREEN_WIDTH - visual_len) / 2;
+            if (x < 1) x = 1;
+            move_cursor(x + 45, y++);
+            printf("%s", buffer);
         }
-        fclose(file); // 출력이 끝났으므로 파일을 닫음
+        fclose(file);
     }
-    else { // 파일을 찾지 못했거나 오류가 발생한 경우
-        printf("\n[오류] '%s' 파일을 찾을 수 없습니다.\n", filename);
-        printf("프로젝트 폴더 안에 파일 이름이 정확히 %s 인지 확인해주세요.\n\n", filename);
+    else {
+        move_cursor(10, 10);
+        printf("[오류] '%s' 파일을 찾을 수 없습니다.\n", filename);
     }
 
-    // 텍스트 파일(아스키아트) 출력 아래쪽에 팀원 설명 및 네비게이션 안내문 출력
-    printf("\n\n==================================================\n");
-    printf("  %s\n", description); // 인자로 받은 팀원 역할/학번 출력
-    printf("==================================================\n");
-    // 사용자가 페이지를 넘기거나 메뉴로 돌아갈 수 있도록 키 안내
-    printf("\n[ <- 이전 페이지 ]        [ Backspace 메뉴로 돌아가기 ]        [ 다음 페이지 -> ]\n");
+    move_cursor((SCREEN_WIDTH + 38) / 2, 38);
+    printf("==================================================");
+    move_cursor((SCREEN_WIDTH - calculate_visual_length(description)) / 1, 39);
+    printf("%s", description);
+    move_cursor((SCREEN_WIDTH + 38) / 2, 40);
+    printf("==================================================");
+
+    const char* nav_str = "[ <- 이전 페이지 ]        [ Backspace 메뉴로 돌아가기 ]        [ 다음 페이지 -> ]";
+    move_cursor((SCREEN_WIDTH + calculate_visual_length(nav_str)) / 3, 42);
+    printf("%s", nav_str);
 }
 
-// -------------------------------------------------------------------------
-// [추가된 부분 2] 팀원 소개의 마지막 페이지 (ZERONE 로고 화면)를 출력하는 함수
-// -------------------------------------------------------------------------
+// [각주 22] 소개 종료 화면: 팀 소개 파트가 끝났음을 알리는 마무리 화면을 그립니다.
 void draw_final_screen(void) {
-    printf("\x1b[2J\x1b[H"); // 화면 전체를 지우고 커서를 맨 위로 이동
+    printf("\x1b[2J\x1b[H");
 
-    // 가운데 파란 박스의 크기 및 위치 좌표 설정
-    int box_width = 50;
+    int box_width = 60;
     int box_height = 30;
-    int box_start_x = 40;
-    int box_start_y = 5;
+    int box_start_x = (SCREEN_WIDTH - box_width) / 1;
+    int box_start_y = 1;
 
-    // 파란색 배경 박스를 화면에 그리는 루프
     for (int i = 0; i < box_height; i++) {
-        printf("\x1b[%d;%dH", box_start_y + i, box_start_x); // 커서 이동
-        printf("\x1b[44m"); // 배경색 파란색
-        for (int j = 0; j < box_width; j++) {
-            printf(" "); // 공백 채우기
-        }
-        printf("\x1b[0m"); // 색상 초기화
+        printf("\x1b[%d;%dH\x1b[44m", box_start_y + i + 6, box_start_x + 15);
+        for (int j = 0; j < box_width; j++) { printf(" "); }
+        printf("\x1b[0m");
     }
 
-    // 픽셀 아트로 표현된 'ZERONE' 로고 문자열 배열
     const char* title_text[] = {
         "XXXXX  XXXXX  XXXX   XXXXX  X   X  XXXXX",
         "   X   X      X   X  X   X  XX  X  X    ",
@@ -380,428 +499,484 @@ void draw_final_screen(void) {
         "XXXXX  XXXXX  X   X  XXXXX  X   X  XXXXX"
     };
 
-    // 로고를 박스 정중앙에 배치하기 위한 계산
     int title_width = (int)strlen(title_text[0]);
-    int title_start_x = box_start_x + (box_width - title_width) / 2;
-    int title_start_y = box_start_y + (box_height - 11) / 2;
+    int title_start_x = box_start_x + 16 + (box_width - title_width) / 2;
+    int title_start_y = box_start_y + 15;
 
-    // 계산된 위치에 ZERONE 로고를 출력하는 루프
     for (int i = 0; i < 5; i++) {
         printf("\x1b[%d;%dH", title_start_y + i, title_start_x);
         for (int j = 0; j < title_width; j++) {
-            if (title_text[i][j] == 'X') { // 'X' 문자는 검은색 블록으로 표시
-                printf("\x1b[40m ");
-            }
-            else { // 빈칸은 배경색인 파란색으로 표시
-                printf("\x1b[44m ");
-            }
+            if (title_text[i][j] == 'X') { printf("\x1b[40m "); }
+            else { printf("\x1b[44m "); }
         }
-        printf("\x1b[0m"); // 한 줄 끝날 때마다 색상 초기화
+        printf("\x1b[0m");
     }
 
-    // ZERONE 팀원 전체 명단 텍스트 배열
     const char* team_text[] = {
         " team 01 (ZERONE) 팀원들",
-        "마준서(202617166) : 총괄", // 오타(학번) 교정됨
-        "백종화(202617139) : 코드",
-        "이인욱(202619389) : 코드",
-        "이준현(202619549) : 디자인"
-    };
-
-    // 로고 아래에 명단을 예쁘게 정렬하기 위한 시작 좌표 계산
-    int team_start_x = box_start_x + (box_width - 24) / 2;
-    int team_start_y = title_start_y + 5 + 1;
-
-    // 명단 배열을 순회하며 화면에 출력 (검은색 폰트, 파란색 배경)
-    for (int i = 0; i < 5; i++) {
-        printf("\x1b[%d;%dH\x1b[30m\x1b[44m%s\x1b[0m", team_start_y + i, team_start_x, team_text[i]);
-    }
-
-    // 박스 바깥 아래쪽 공간으로 커서를 이동시킨 뒤, 네비게이션 키 안내 출력
-    printf("\x1b[%d;1H\n", box_start_y + box_height + 1);
-
-    // [요청 반영] 마지막 창 아래에 Backspace 안내 문구를 추가하여 출력
-    printf("[ <- 이전 페이지 ]        [ Backspace 메뉴로 돌아가기 ]        [ ESC 종료 ]\n");
-}
-
-// -------------------------------------------------------------------------
-// [교체된 부분] 메뉴 1번을 눌렀을 때 실행되는 팀원 소개 로직 메인 함수
-// -------------------------------------------------------------------------
-int People(void)
-{
-    // 각 페이지에서 읽어올 팀원 아스키아트 텍스트 파일들의 이름 배열
-    const char* filenames[] = {
-        "1.txt",
-        "2.txt",
-        "3.txt",
-        "4.txt"
-    };
-
-    // 각 팀원 텍스트 파일 하단에 띄울 소개글 배열
-    const char* descriptions[] = {
         "마준서(202617166) : 총괄",
         "백종화(202617139) : 코드",
         "이인욱(202619389) : 코드",
         "이준현(202619549) : 디자인"
     };
 
-    int current_page = 0; // 현재 보여주고 있는 페이지의 인덱스 (0~4)
-    int total_pages = 5;  // 팀원 4명(0~3) + 마지막 로고 화면(4) = 총 5페이지
+    int team_start_y = title_start_y + 7;
+    for (int i = 0; i < 5; i++) {
+        int text_vis_len = calculate_visual_length(team_text[i]);
+        int team_line_x = box_start_x + 15 + (box_width - text_vis_len) / 2;
+        printf("\x1b[%d;%dH\x1b[30m\x1b[44m%s\x1b[0m", team_start_y + i, team_line_x, team_text[i]);
+    }
 
-    while (1) // 사용자가 메뉴로 나가거나 종료할 때까지 화면을 반복해서 그림
+    const char* final_nav = "[ <- 이전 페이지 ]        [ Backspace 메뉴로 돌아가기 ]        [ ESC 종료 ]";
+    int final_nav_x = (SCREEN_WIDTH - calculate_visual_length(final_nav)) / 2;
+    move_cursor(final_nav_x + 45, box_start_y + 9 + box_height + 2);
+    set_color(FONT_COLOR_WHITE);
+    printf("%s", final_nav);
+}
+
+// [각주 23] 제작자 소개 흐름: 여러 소개 파일을 순서대로 보여 주고 마지막에 메뉴 상태로 복귀합니다.
+int People(void)
+{
+    const char* filenames[] = { "1.txt", "2.txt", "3.txt", "4.txt" };
+    const char* descriptions[] = {
+        "마준서(202617166) : 총괄   ",
+        "백종화(202617139) : 코드   ",
+        "이인욱(202619389) : 코드   ",
+        "이준현(202619549) : 디자인  "
+    };
+
+    int current_page = 0;
+    int total_pages = 5;
+
+    while (1)
     {
-        // current_page 인덱스에 따라 알맞은 화면을 렌더링
         if (current_page < 4) {
-            // 인덱스가 0~3인 경우, 파일과 소개글을 넘겨 팀원 개인 페이지 출력
             print_member_page(filenames[current_page], descriptions[current_page]);
         }
         else if (current_page == 4) {
-            // 인덱스가 4인 경우, 마지막 ZERONE 전체 로고 페이지 출력
             draw_final_screen();
         }
 
-        // 사용자의 키보드 입력을 받음
         int ch = _getch();
 
-        // 방향키 등 확장 키보드 코드가 들어온 경우 (224 또는 0)
         if (ch == 224 || ch == 0) {
-            ch = _getch(); // 실제 방향키 식별 코드를 한 번 더 읽어옴
+            ch = _getch();
 
-            if (ch == 75) {         // '왼쪽 화살표(←)' 키를 누른 경우
+            if (ch == 75) {
                 if (current_page > 0) {
-                    current_page--; // 이전 페이지로 이동
+                    current_page--;
                 }
             }
-            else if (ch == 77) {    // '오른쪽 화살표(→)' 키를 누른 경우
+            else if (ch == 77) {
                 if (current_page < total_pages - 1) {
-                    current_page++; // 다음 페이지로 이동
+                    current_page++;
                 }
             }
         }
-        else if (ch == 8) { // Backspace 키(아스키코드 8)를 누른 경우
-            system("cls");  // 화면을 깨끗이 지우고
-            return 0;       // 함수를 종료하여 (main 루프로 돌아가) 메인 메뉴 화면으로 복귀함
+        else if (ch == 8) {
+            system("cls");
+            return 0;
         }
-        else if (ch == 27) { // ESC 키(아스키코드 27)를 누른 경우
-            exit(0);         // 프로그램 전체를 즉시 강제 종료
+        else if (ch == 27) {
+            exit(0);
         }
     }
 
     return 0;
 }
 
-// 메인 메뉴 2번 '설명서'를 눌렀을 때 실행되는 함수
+// [각주 24] 게임 설명 화면: 조작법과 규칙을 콘솔 중앙에 출력하고 Backspace 입력을 기다립니다.
 int Manual(void)
 {
-    int key = 0;          // 키보드 입력을 받을 변수 초기화
-    int Manual_page = 1;  // 설명서의 현재 페이지 상태 (1 또는 2)
-    system("cls");        // 메뉴 진입 전 화면을 지움
+    int key = 0;
+    int Manual_page = 1;
+    system("mode con cols=210 lines=60");
 
-    // Backspace(8)를 눌러 메뉴로 나가기 전까지 반복
     while (key != 8)
     {
-        system("cls"); // 화면을 갱신하기 위해 지움
+        int console_width = 210;
+        int console_height = 60;
+        CONSOLE_SCREEN_BUFFER_INFO csbi;
 
-        if (Manual_page == 1) // 1페이지일 때 그릴 UI
+        if (GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi))
         {
-            move_cursor(111, 50); // 우측 하단에 '다음장' 안내 출력
-            printf("\033[1m다음장 (→)\033[0m");
+            console_width = csbi.srWindow.Right - csbi.srWindow.Left + 1;
+            console_height = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
+        }
 
-            // 제목 박스 출력
+        int center_x = console_width / 2;
+        int title_y = (console_height / 2) - 14;
+        int body_y = title_y + 4;
+        int nav_y = title_y + 23;
+        int content_x = center_x - 48;
+
+        if (title_y < 3) title_y = 3;
+        if (body_y < 7) body_y = 7;
+        if (nav_y > console_height - 2) nav_y = console_height - 2;
+        if (content_x < 1) content_x = 1;
+
+        system("cls");
+
+        if (Manual_page == 1)
+        {
+            const char* next_msg = "다음장 (→)";
+            const char* title_msg = "=========== 설명서 ===========";
+
+            move_cursor(center_x - (calculate_visual_length(next_msg) / 2), nav_y);
+            printf("\033[1m%s\033[0m", next_msg);
+
             set_color(BG_COLOR_BRIGHTMAGENTA);
             set_color(FONT_COLOR_WHITE);
-            move_cursor(48, 7);
-            printf("=========== 설명서 ===========");
+            move_cursor(center_x - (calculate_visual_length(title_msg) / 2), title_y);
+            printf("%s", title_msg);
 
-            set_color(BG_COLOR_BLACK); // 배경 복구
+            set_color(BG_COLOR_BLACK);
 
-            // 게임 룰 설명 텍스트들을 각 위치에 출력
             set_color(FONT_COLOR_YELLOW);
-            move_cursor(43, 10);
-            printf("게임 제목 : 이걸 죽네");
+            move_cursor(content_x + 38, body_y); printf("게임 제목 : 이걸 죽네");
 
-            set_color(FONT_COLOR_RED);
-            move_cursor(43, 12);
-            printf("HP");
+            set_color(FONT_COLOR_RED); move_cursor(content_x + 20, body_y + 3); printf("HP");
+            set_color(FONT_COLOR_WHITE); printf("가 0 이하가 되기 전까지 최대한 많은 턴을 버티는 게임입니다.");
 
-            set_color(FONT_COLOR_WHITE);
-            printf("가 0 이하가 되기 전까지 최대한 많은 턴을 버티는 게임입니다.");
+            move_cursor(content_x + 30, body_y + 5); printf("매 턴마다 2개 또는 3개의 선택지가 나옵니다.");
+            move_cursor(content_x + 32, body_y + 6); printf("선택지 안의 숫자는 무작위로 정해집니다.");
+            move_cursor(content_x + 30, body_y + 7); printf("선택한 행동에 따라 ");
 
-            move_cursor(43, 14);
-            printf("매 턴마다 2개 또는 3개의 선택지가 나옵니다.");
+            set_color(FONT_COLOR_RED); printf("HP"); set_color(FONT_COLOR_WHITE); printf("가 다르게 감소합니다.");
 
-            set_color(FONT_COLOR_WHITE);
-            move_cursor(43, 15);
-            printf("선택지 안의 숫자는 무작위로 정해집니다.");
-
-            move_cursor(43, 16);
-            printf("선택한 행동에 따라 ");
-
-            set_color(FONT_COLOR_RED);
-            printf("HP");
-
-            set_color(FONT_COLOR_WHITE);
-            printf("가 다르게 감소합니다.");
-
-            // 페이지 좌측 하단에 뒤로가기 키 안내 출력
-            set_color(FONT_COLOR_YELLOW);
-            move_cursor(43, 17);
-            printf("Backspace");
-
-            set_color(FONT_COLOR_WHITE);
-            printf("를 눌러 메뉴로 돌아가시오");
+            set_color(FONT_COLOR_YELLOW); move_cursor(content_x + 32, body_y + 10); printf("Backspace");
+            set_color(FONT_COLOR_WHITE); printf("를 눌러 메뉴로 돌아가시오");
         }
 
-        if (Manual_page == 2) // 2페이지일 때 그릴 조작법 UI
+        if (Manual_page == 2)
         {
-            // 하단 조작 안내
-            move_cursor(0, 50);
-            printf("\033[1m이전장 (←)\033[0m");
+            const char* prev_msg = "이전장 (←)";
+            const char* exit_msg = "나가기 (Backspace)";
+            const char* title_msg = "키 설명";
 
-            move_cursor(103, 50);
-            printf("\033[1m나가기 (Backspace)\033[0m");
+            move_cursor(center_x - 45, nav_y); printf("\033[1m%s\033[0m", prev_msg);
+            move_cursor(center_x + 25, nav_y); printf("\033[1m%s\033[0m", exit_msg);
 
-            // 각종 키 설명 텍스트들을 각 위치에 출력
-            move_cursor(60, 7);
-            printf("\033[1m키 설명\033[0m");
-            move_cursor(53, 12);
-            printf("↑: 위로 이동");
-            move_cursor(53, 13);
-            printf("↓: 밑으로 이동");
-            move_cursor(53, 14);
-            printf("←: 왼쪽 선택");
-            move_cursor(53, 15);
-            printf("→: 오른쪽 선택");
-            move_cursor(53, 16);
-            printf("Enter : 선택");
-            move_cursor(53, 17);
-            printf("ESC : 게임 종료");
-            move_cursor(53, 18);
-            printf("Backspace : 뒤로 가기");
+            move_cursor(center_x - (calculate_visual_length(title_msg) / 2), title_y); printf("\033[1m%s\033[0m", title_msg);
+            move_cursor(content_x + 43, body_y + 1);  printf("↑: 위로 이동");
+            move_cursor(content_x + 43, body_y + 2); printf("↓: 밑으로 이동");
+            move_cursor(content_x + 43, body_y + 3); printf("←: 왼쪽 선택");
+            move_cursor(content_x + 43, body_y + 4); printf("→: 오른쪽 선택");
+            move_cursor(content_x + 43, body_y + 5); printf("Enter : 선택");
+            move_cursor(content_x + 43, body_y + 6); printf("ESC : 게임 종료");
+            move_cursor(content_x + 40, body_y + 7); printf("Backspace : 뒤로 가기");
         }
 
-        key = _getch(); // 페이지를 보고 난 뒤 키 입력 대기
+        key = _getch();
+        if (key == 0 || key == 224)
+        {
+            key = _getch();
+        }
 
-        // 방향키 등 입력에 따른 페이지 이동 또는 종료
         switch (key)
         {
-        case 75: // ← 키
-            if (Manual_page > 1) // 1페이지보다 크면
-            {
-                Manual_page = Manual_page - 1; // 1페이지로 돌아감
-            }
+        case 75:
+            if (Manual_page > 1) { Manual_page = Manual_page - 1; }
             break;
-        case 77: // → 키
-            if (Manual_page < 2) // 2페이지보다 작으면
-            {
-                Manual_page = Manual_page + 1; // 2페이지로 넘어감
-            }
+        case 77:
+            if (Manual_page < 2) { Manual_page = Manual_page + 1; }
             break;
-
-        case 27: // ESC 키
-            exit(0); // 프로그램 즉시 종료
+        case 27:
+            exit(0);
             break;
         }
     }
 
-    system("cls"); // 백스페이스를 눌러 루프를 탈출하면 화면을 지우고 메뉴로 돌아감
+    system("cls");
     return 0;
 }
 
-// 메인 메뉴 3번 '게임 시작'을 눌렀을 때 실행되는 실제 게임 로직 함수
+// [각주 25] 메인 게임 루프: BGM, HP, 점수, 선택지 표시, 제한 시간, 데미지 계산을 담당하는 핵심 함수입니다.
 int Gamestart(void)
 {
-    // ============================================================
-    // ★ 추가된 오프닝 (ta.txt 파일 출력) 연출 시작 부분 ★
-    // ============================================================
-    system("mode con cols=210 lines=60"); // 텍스트 아가 깨지지 않게 콘솔 크기를 넉넉히 변경
-    system("cls"); // 화면 지우기
+    system("mode con cols=210 lines=60");
+    system("cls");
 
-    FILE* fp = fopen("ta.txt", "r"); // 오프닝 텍스트 파일(ta.txt) 읽기 모드로 열기
-    char buffer[1024]; // 한 줄을 저장할 버퍼
-    int start_x = 40;  // 파일 텍스트를 출력할 시작 x 좌표
-    int current_y = 10; // 파일 텍스트를 출력할 시작 y 좌표
+    int intro_width = 210;
+    int intro_height = 60;
+    CONSOLE_SCREEN_BUFFER_INFO intro_csbi;
 
-    if (fp != NULL) { // 파일이 무사히 열렸다면
-        while (fgets(buffer, sizeof(buffer), fp) != NULL) { // 파일 끝까지 한 줄씩 읽기
-            // 줄바꿈 문자(엔터, \n, \r)를 제거하여 깨끗한 문자열로 만듦
+    if (GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &intro_csbi))
+    {
+        intro_width = intro_csbi.srWindow.Right - intro_csbi.srWindow.Left + 1;
+        intro_height = intro_csbi.srWindow.Bottom - intro_csbi.srWindow.Top + 1;
+    }
+
+    FILE* fp = fopen("ta.txt", "r");
+    char intro_lines[100][1024];
+    char buffer[1024];
+    int intro_line_count = 0;
+    int intro_max_width = 0;
+
+    if (fp != NULL) {
+        while (fgets(buffer, sizeof(buffer), fp) != NULL && intro_line_count < 100) {
             buffer[strcspn(buffer, "\r\n")] = 0;
+            strcpy(intro_lines[intro_line_count], buffer);
 
-            gotoxy(start_x, current_y); // 지정된 위치로 커서 이동
-            printf("%s", buffer);       // 읽은 텍스트 출력
-            current_y++;                // 다음 줄을 위해 y 좌표 1 증가
+            int line_width = calculate_visual_length(buffer);
+            if (line_width > intro_max_width) intro_max_width = line_width;
+
+            intro_line_count++;
         }
-        fclose(fp); // 파일 다 읽었으니 닫기
+        fclose(fp);
 
-        // 그림이 다 출력된 밑 공간에 안내 메시지 출력
-        gotoxy(start_x, current_y + 2);
-        printf("아무 키나 누르면 게임이 시작됩니다...");
-        _getch(); // 유저가 확인할 수 있도록 아무 키나 누를 때까지 정지 대기
+        int start_x = (intro_width - intro_max_width) / 2;
+        int start_y = (intro_height - intro_line_count) / 2 - 2;
+        if (start_x < 1) start_x = 1;
+        if (start_y < 2) start_y = 2;
+
+        for (int i = 0; i < intro_line_count; i++) {
+            move_cursor(start_x, start_y + i);
+            printf("%s", intro_lines[i]);
+        }
+
+        const char* start_msg = "아무 키나 누르면 게임이 시작됩니다...";
+        int start_msg_x = (intro_width - calculate_visual_length(start_msg)) / 2;
+        if (start_msg_x < 1) start_msg_x = 1;
+
+        move_cursor(start_msg_x, start_y + intro_line_count + 2);
+        printf("%s", start_msg);
+        _getch();
     }
-    else { // 파일을 찾지 못한 경우 에러 처리
-        gotoxy(start_x, current_y);
-        printf("오류: ta.txt 파일을 찾을 수 없습니다.\n");
-        Sleep(2000); // 2초간 에러 메시지를 보여주고 넘어감
+    else {
+        const char* error_msg = "오류: ta.txt 파일을 찾을 수 없습니다.";
+        int error_x = (intro_width - calculate_visual_length(error_msg)) / 2;
+        if (error_x < 1) error_x = 1;
+        move_cursor(error_x, intro_height / 2); printf("%s\n", error_msg); Sleep(2000);
     }
 
-    // 원래 게임 UI 규격(SCREEN_WIDTH=120, SCREEN_HEIGHT=30)이 
-    // 정상적으로 렌더링되도록 콘솔 크기를 다시 원래대로 축소 복구
+    int random_bgm = rand() % 3; // 0 또는 1 생성
+    if (random_bgm == 0) {
+        PlaySound(TEXT("White Hats - Wayne Jones_[cut_99sec].wav"), NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
+    }
+    else {
+        PlaySound(TEXT("Propellerheads - Spybreak!_[cut_240sec].wav"), NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
+    }
+
     system("mode con cols=120 lines=30");
     system("cls");
-    // ============================================================
-    // ★ 추가된 오프닝 (ta.txt 파일 출력) 연출 끝 부분 ★
-    // ============================================================
 
-    // 매 게임마다 선택지가 다르게 나오도록 난수 생성 시드를 현재 시간 기반으로 초기화
     srand((unsigned int)time(NULL));
 
-    int hp = 100;    // 플레이어의 초기 HP 설정
-    int score = 0;   // 플레이어의 초기 점수 설정 (버틴 라운드 수)
-    int key = 0;     // 입력받을 키 저장용 변수
+    int hp = 100;
+    int score = 0;
+    finalScore = 0;
+    int key = 0;
+    // [각주 26] 라운드 반복 조건: HP가 남아 있는 동안 매 라운드 두 개의 선택지를 보여 주고 결과를 누적합니다.
 
-    // 플레이어의 HP가 0보다 큰(살아있는) 동안 무한 반복되는 라운드 루프
     while (hp > 0)
     {
-        system("cls"); // 새 라운드 시작 전 화면 지우기
+        system("cls");
 
-        // 2개의 중복되지 않는 랜덤 선택지 뽑기 로직
-        int left_idx = rand() % num_choices; // 왼쪽 선택지를 0~총개수-1 범위 내 랜덤 뽑기
+        int left_idx = rand() % num_choices;
         int right_idx;
         do {
-            right_idx = rand() % num_choices; // 오른쪽 선택지도 뽑되
-        } while (left_idx == right_idx);      // 왼쪽과 똑같은 게 나오면 다시 뽑음
+            right_idx = rand() % num_choices;
+        } while (left_idx == right_idx);
 
-        // n 변수가 텍스트에 포함되어(%d 존재) 매번 값이 달라져야 하는 선택지일 경우
-        // 화면 출력 전 미리 n 값을 랜덤(min_damage ~ max_damage)으로 뽑아 둡니다.
         int left_n = 0, right_n = 0;
-        if (strstr(choices[left_idx].text, "%d") != NULL) { // 왼쪽에 %d가 있으면
+        if (strstr(choices[left_idx].text, "%d") != NULL) {
             left_n = (rand() % (choices[left_idx].max_damage - choices[left_idx].min_damage + 1)) + choices[left_idx].min_damage;
         }
-        if (strstr(choices[right_idx].text, "%d") != NULL) { // 오른쪽에 %d가 있으면
+        if (strstr(choices[right_idx].text, "%d") != NULL) {
             right_n = (rand() % (choices[right_idx].max_damage - choices[right_idx].min_damage + 1)) + choices[right_idx].min_damage;
         }
 
-        // 상단 UI (현재 HP 출력)
-        set_color(FONT_COLOR_RED);
-        move_cursor(40, 2);
-        printf("HP : %d", hp);
+        int center_x = 100;
+        int left_center = center_x - 35 + 6;
+        int right_center = center_x + 35 + 6;
 
-        // 상단 UI (현재 SCORE 출력)
-        set_color(FONT_COLOR_WHITE);
-        move_cursor(70, 2);
-        printf("SCORE : %d", score);
-
-        // 화면 중앙에 'VS' 문자열 출력
-        set_color(FONT_COLOR_YELLOW);
-        move_cursor(58, 12);
-        printf("VS");
-        set_color(FONT_COLOR_WHITE);
-
-        // 왼쪽 선택지의 아스키아트 이미지(6줄) 화면에 출력
-        for (int i = 0; i < 6; i++) {
-            move_cursor(25, 8 + i);
-            printf("%s", choices[left_idx].art[i]);
-        }
-        // 왼쪽 선택지의 설명 텍스트 출력
-        move_cursor(15, 18);
-        if (strstr(choices[left_idx].text, "%d") != NULL) { // n층 계열이면
-            printf(choices[left_idx].text, left_n);         // 뽑아둔 left_n을 포맷에 넣어 출력
-        }
-        else {
-            printf("%s", choices[left_idx].text);           // 아니면 원본 그대로 출력
-        }
-
-        // 오른쪽 선택지의 아스키아트 이미지(6줄) 화면에 출력
-        for (int i = 0; i < 6; i++) {
-            move_cursor(80, 8 + i);
-            printf("%s", choices[right_idx].art[i]);
-        }
-        // 오른쪽 선택지의 설명 텍스트 출력
-        move_cursor(70, 18);
-        if (strstr(choices[right_idx].text, "%d") != NULL) { // n층 계열이면
-            printf(choices[right_idx].text, right_n);        // 뽑아둔 right_n을 포맷에 넣어 출력
-        }
-        else {
-            printf("%s", choices[right_idx].text);           // 아니면 원본 그대로 출력
-        }
-
-        // 화면 하단에 조작 안내 문구 초록색으로 출력
-        set_color(FONT_COLOR_GREEN);
-        move_cursor(35, 25);
-        printf("방향키(←, →)로 선택하세요. (메뉴로 가기: Backspace)");
-        set_color(FONT_COLOR_WHITE); // 색상 초기화
-
-        // 플레이어가 선택할 때까지 대기하는 입력 판별 로직
-        int has_selected = 0; // 선택이 완료되었는지 확인하는 플래그 (0=미선택, 1=선택완료)
-        int selected_idx = 0; // 유저가 최종적으로 고른 선택지의 인덱스를 저장할 변수
-
-        while (!has_selected) // 사용자가 무언가를 선택할 때까지 무한루프
+        int console_height = 30;
+        CONSOLE_SCREEN_BUFFER_INFO game_csbi;
+        if (GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &game_csbi))
         {
-            key = _getch(); // 키보드 입력 받음
+            console_height = game_csbi.srWindow.Bottom - game_csbi.srWindow.Top + 1;
+        }
 
-            if (key == 224) // 방향키 같은 확장 키의 접두사
+        int choice_y = (console_height - 18) / 2 + 1;
+        if (choice_y < 8) choice_y = 8;
+
+        int vs_y = choice_y + 4;
+        int msg_y = choice_y + 10;
+        int help_y = choice_y + 17;
+        int max_help_y = console_height - 2;
+
+        if (help_y > max_help_y)
+        {
+            int move_up = help_y - max_help_y;
+            choice_y -= move_up;
+            if (choice_y < 3) choice_y = 3;
+
+            vs_y = choice_y + 4;
+            msg_y = choice_y + 10;
+            help_y = choice_y + 17;
+        }
+
+        int hud_y = choice_y / 2;
+        if (hud_y < 2) hud_y = 2;
+
+        char player_hud[80], hp_hud[40], score_hud[40];
+        sprintf(player_hud, "Player : %s", playerName);
+        sprintf(hp_hud, "HP : %d", hp);
+        sprintf(score_hud, "SCORE : %d", score);
+
+        int hud_gap = 24;
+        int player_hud_len = calculate_visual_length(player_hud);
+        int hp_hud_len = calculate_visual_length(hp_hud);
+        int score_hud_len = calculate_visual_length(score_hud);
+        int hud_total_len = player_hud_len + hp_hud_len + score_hud_len + (hud_gap * 2);
+        int hud_x = center_x - (hud_total_len / 2) + 6;
+        if (hud_x < 1) hud_x = 1;
+
+        set_color(FONT_COLOR_GREEN); move_cursor(hud_x, hud_y); printf("%s", player_hud);
+        set_color(FONT_COLOR_RED); move_cursor(hud_x + player_hud_len + hud_gap, hud_y); printf("%s", hp_hud);
+        set_color(FONT_COLOR_WHITE); move_cursor(hud_x + player_hud_len + hud_gap + hp_hud_len + hud_gap, hud_y); printf("%s", score_hud);
+
+        char left_msg[256], right_msg[256];
+        if (strstr(choices[left_idx].text, "%d") != NULL) sprintf(left_msg, choices[left_idx].text, left_n);
+        else strcpy(left_msg, choices[left_idx].text);
+        if (strstr(choices[right_idx].text, "%d") != NULL) sprintf(right_msg, choices[right_idx].text, right_n);
+        else strcpy(right_msg, choices[right_idx].text);
+
+        int left_msg_len = calculate_visual_length(left_msg);
+        int right_msg_len = calculate_visual_length(right_msg);
+        int left_x = left_center - (left_msg_len / 2);
+        int right_x = right_center - (right_msg_len / 2);
+
+        set_color(FONT_COLOR_YELLOW); move_cursor(center_x - 1 + 6, vs_y); printf("VS");
+        set_color(FONT_COLOR_WHITE);
+
+        for (int i = 0; i < 6; i++) {
+            int art_len = calculate_visual_length(choices[left_idx].art[i]);
+            move_cursor(left_center - (art_len / 2), choice_y + i); printf("%s", choices[left_idx].art[i]);
+        }
+        move_cursor(left_x, msg_y); printf("%s", left_msg);
+
+        for (int i = 0; i < 6; i++) {
+            int art_len = calculate_visual_length(choices[right_idx].art[i]);
+            move_cursor(right_center - (art_len / 2), choice_y + i); printf("%s", choices[right_idx].art[i]);
+        }
+        move_cursor(right_x, msg_y); printf("%s", right_msg);
+
+        const char* help_msg = "방향키(←, →)로 선택하세요. (메뉴로 가기: Backspace)";
+        int help_msg_len = calculate_visual_length(help_msg);
+        int help_x = center_x - (help_msg_len / 2) + 6;
+        set_color(FONT_COLOR_GREEN); move_cursor(help_x, help_y); printf("%s", help_msg);
+        set_color(FONT_COLOR_WHITE);
+
+        int left_auto_damage = choices[left_idx].max_damage;
+        int right_auto_damage = choices[right_idx].max_damage;
+
+        if (left_idx == 5) left_auto_damage = left_n * 4;
+        else if (left_idx == 7) left_auto_damage = left_n * 2;
+
+        if (right_idx == 5) right_auto_damage = right_n * 4;
+        else if (right_idx == 7) right_auto_damage = right_n * 2;
+
+        int auto_selected_idx = (left_auto_damage >= right_auto_damage) ? left_idx : right_idx;
+        int has_selected = 0;
+        int selected_idx = 0;
+        int timeout_seconds = 2;
+        int last_remaining = -1;
+        int timer_x = hud_x + player_hud_len + hud_gap + hp_hud_len + hud_gap + score_hud_len + 12;
+        DWORD start_tick = GetTickCount();
+
+        while (!has_selected)
+        {
+            DWORD elapsed_ms = GetTickCount() - start_tick;
+            int remaining = timeout_seconds - (int)(elapsed_ms / 1000);
+            if (remaining < 0) remaining = 0;
+
+            if (remaining != last_remaining)
             {
-                key = _getch(); // 실제 키 코드를 읽음
-                if (key == 75) // 왼쪽 (←) 키
+                char timer_msg[32];
+                sprintf(timer_msg, "TIME : %d", remaining);
+
+                if (remaining <= 3) set_color(FONT_COLOR_RED);
+                else set_color(FONT_COLOR_YELLOW);
+
+                move_cursor(timer_x, hud_y);
+                printf("%-12s", timer_msg);
+                set_color(FONT_COLOR_WHITE);
+                last_remaining = remaining;
+            }
+
+            if (elapsed_ms >= (DWORD)(timeout_seconds * 1000))
+            {
+                selected_idx = auto_selected_idx;
+                has_selected = 1;
+                break;
+            }
+
+            if (!_kbhit())
+            {
+                Sleep(50);
+                continue;
+            }
+
+            key = _getch();
+
+            if (key == 0 || key == 224)
+            {
+                key = _getch();
+                if (key == 75)
                 {
-                    selected_idx = left_idx; // 고른 선택지를 왼쪽 것으로 확정
-                    has_selected = 1;        // 선택 완료 플래그 활성화
+                    selected_idx = left_idx;
+                    has_selected = 1;
                 }
-                else if (key == 77) // 오른쪽 (→) 키
+                else if (key == 77)
                 {
-                    selected_idx = right_idx; // 고른 선택지를 오른쪽 것으로 확정
-                    has_selected = 1;         // 선택 완료 플래그 활성화
+                    selected_idx = right_idx;
+                    has_selected = 1;
                 }
             }
-            else if (key == 8) // 메뉴로 돌아가기 위해 Backspace를 누른 경우
+            else if (key == 8)
             {
-                save_console_screen(); // 메뉴로 나가기 전 현재 게임 화면(질문들)을 임시 버퍼에 백업 저장
+                DWORD pause_start = GetTickCount();
+                save_console_screen();
 
-                // 일시 정지(게임 중단) 확인 창 루프
                 while (1)
                 {
-                    // 화면 중앙에 검은색 배경 박스를 덮어씌워 팝업창처럼 만듦
-                    set_color(BG_COLOR_BLACK);
-                    move_cursor(20, 7);
-                    // 빈 공간(공백) 문자열로 기존 그림을 덮어서 가림
-                    printf("                                                                                                                       \n                                                                                                                       \n                                                                                                                       \n                                                                                                                       \n                                                                                                                       \n                                                                                                                       \n                                                                                                                       \n");
+                    printf("\x1b[2J\x1b[H");
 
-                    // 팝업 내용 출력
-                    set_color(FONT_COLOR_RED);
-                    move_cursor(50, 12);
-                    printf("게임을 중지하시겠습니까?");
-                    move_cursor(40, 15);
-                    printf("게임을 계속하려면 t, 중지하려면 r를 누르시오.");
+                    int confirm_y = console_height / 2;
+                    if (confirm_y < 4) confirm_y = 4;
 
-                    key = _getch(); // y/n 대신 t/r 입력을 대기
+                    set_color(FONT_COLOR_RED); move_cursor(center_x - 12, confirm_y); printf("게임을 중지하시겠습니까?");
+                    move_cursor(center_x - 22, confirm_y + 3); printf("게임을 계속하려면 t, 중지하려면 r를 누르시오.");
 
-                    if (key == 'r') // r을 누르면 완전히 중지하고 메뉴로 나감
+                    key = _getch();
+
+                    if (key == 'r')
                     {
-                        system("cls"); // 지우고
-                        return 0;      // Gamestart 함수를 빠져나가 메인 화면으로 돌아감
+                        system("cls");
+                        return 0;
                     }
-                    if (key == 't') // t를 누르면 중지 취소, 게임 재개
+                    if (key == 't')
                     {
-                        restore_console_screen(); // 팝업 띄우기 전 백업해둔 원래 게임화면을 다시 덮어씌워 복원
-                        break; // 팝업창 루프를 빠져나가고 기존 선택 판별 대기 화면으로 돌아감
+                        restore_console_screen();
+                        start_tick += GetTickCount() - pause_start;
+                        last_remaining = -1;
+                        break;
                     }
                 }
             }
-            else if (key == 27) // ESC를 누른 경우
+            else if (key == 27)
             {
-                exit(0); // 프로그램 강제 종료
+                continue;
             }
-        } // while(!has_selected) 끝
-
-        // 유저가 고른 선택지에 따른 데미지 계산 처리
+        }
         int damage = 0;
 
-        // 만약 고른 선택지의 텍스트 안에 '%d' 가 들어있다면 (n층에서 떨어졌다 등)
         if (strstr(choices[selected_idx].text, "층에서 떨어졌다") != NULL)
         {
-            // 유저가 고른 쪽의 뽑아두었던 n값(층수)을 가져옴
             int n = (selected_idx == left_idx) ? left_n : right_n;
-            damage = n * 4; // n의 값에 비례하여 데미지 계산 (예: 1층당 HP 4씩 감소)
+            damage = n * 4;
         }
         else if (strstr(choices[selected_idx].text, "속도") != NULL)
         {
@@ -809,161 +984,482 @@ int Gamestart(void)
             damage = n * 2;
         }
         else {
-            // 일반 선택지의 경우 설정된 min_damage 와 max_damage 사이에서 랜덤으로 데미지를 정함
             int min = choices[selected_idx].min_damage;
             int max = choices[selected_idx].max_damage;
             damage = (rand() % (max - min + 1)) + min;
         }
 
-        hp -= damage; // 플레이어의 현재 체력에서 계산된 데미지를 차감
-        score += 1;   // 무사히(?) 라운드를 한 턴 버텼으므로 점수 1 증가
+        // ==========================================
+        // [ 신규 코드 ] 고양이 참참참 미니게임 시작
+        // ==========================================
+        // [각주 27] 특수 미니게임 분기: 특정 선택지를 고르면 일반 데미지 계산 대신 방향 맞히기 이벤트를 실행합니다.
+        if (strstr(choices[selected_idx].text, "귀여운 길고양이를 쓰다듬는다.") != NULL)
+        {
+            PlaySound(TEXT("Misirlou Pulp Fiction Theme_[cut_134sec].wav"), NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
 
-        // 유저에게 입은 데미지 결과를 잠시 보여주는 화면 갱신
-        system("cls"); // 화면 한 번 지우고
-        move_cursor(50, 12); // 중앙으로 가서
-        printf("선택 완료! HP가 %d 감소했습니다.", damage); // 결과 출력
-        Sleep(2000); // 사용자가 읽을 수 있도록 2초(2000ms) 대기 후 다음 라운드로 루프 반복
-    } // while(hp > 0) 끝
+            // 전체화면(F11) 레이아웃이 깨지지 않도록 콘솔 버퍼를 매우 넓게(200칸) 확장합니다.
+            system("mode con cols=200 lines=70");
+            system("cls");
 
-    // HP가 0 이하가 되어 반복문을 빠져나온 경우 (게임 오버 처리)
+            // 게임의 중앙 좌표를 더 파격적으로 우측(110)으로 잡았습니다.
+            int mini_center = 110;
+
+            // 1. 고양이 중앙 출력 (110 기준으로 약 29칸 좌측으로 당겨야 딱 중앙 정렬됨)
+            print_ascii_file("ascii-art (5).txt", mini_center - 29, 2);
+
+            // 2. 기본 손 모양 중앙 출력 (마찬가지로 아스키아트 길이 보정)
+            print_ascii_file("ascii-art (6).txt", mini_center - 29, 30);
+
+            int player_dir = 0;
+            set_color(FONT_COLOR_WHITE);
+
+            // 안내 문구를 중앙에 배치
+            int status_y = 29;
+            const char* prompt_msg = "고양이와 참참참! 방향키를 선택하세요 (왼쪽: <-, 위쪽: 위쪽방향키, 오른쪽: ->) : ";
+            int p_len = calculate_visual_length(prompt_msg);
+            move_cursor(mini_center - 70, status_y); printf("%140s", "");
+            move_cursor(mini_center - (p_len / 2), status_y);
+            printf("%s", prompt_msg);
+
+            while (1)
+            {
+                int input_key = _getch();
+
+                if (input_key == 0 || input_key == 224)
+                {
+                    input_key = _getch();
+
+                    if (input_key == 75)
+                    {
+                        player_dir = 3;
+                        break;
+                    }
+                    else if (input_key == 72)
+                    {
+                        player_dir = 2;
+                        break;
+                    }
+                    else if (input_key == 77)
+                    {
+                        player_dir = 1;
+                        break;
+                    }
+                }
+
+                const char* error_msg = "잘못된 입력입니다. 왼쪽/위쪽/오른쪽 방향키를 눌러주세요.";
+                int err_len = calculate_visual_length(error_msg);
+                move_cursor(mini_center - 70, status_y); printf("%140s", "");
+                move_cursor(mini_center - (err_len / 2), status_y);
+                set_color(FONT_COLOR_RED);
+                printf("%s", error_msg);
+                set_color(FONT_COLOR_WHITE);
+            }
+
+            const char* wait_msg = "3초 뒤 결과가 공개됩니다...";
+            int w_len = calculate_visual_length(wait_msg);
+            move_cursor(mini_center - 70, status_y); printf("%140s", "");
+            move_cursor(mini_center - (w_len / 2), status_y);
+            set_color(FONT_COLOR_YELLOW);
+            printf("%s", wait_msg);
+            Sleep(3000);
+
+            system("cls");
+
+            // 고양이 방향 난수 생성 (1: 오른쪽, 2: 중앙, 3: 왼쪽)
+            int cat_dir = (rand() % 3) + 1;
+
+            // 고양이 방향에 맞춰 파격적으로 X좌표 이동
+            int cat_x = mini_center - 29; // 중앙 고정점
+            if (cat_dir == 1) cat_x = mini_center + 15; // 오른쪽으로 확 이동
+            else if (cat_dir == 3) cat_x = mini_center - 75; // 왼쪽으로 확 이동
+
+            // 결과 화면 - 고양이가 선택한 방향으로 휙 이동하여 출력됨
+            print_ascii_file("ascii-art (5).txt", cat_x, 2);
+
+            set_color(FONT_COLOR_BRIGHTMAGENTA);
+            move_cursor(mini_center - 10, 28);
+            if (cat_dir == 1) printf("고양이: (오른쪽 휙!) =>");
+            else if (cat_dir == 2) printf("고양이: (가만히 중앙)");
+            else printf("고양이: <= (왼쪽 휙!)");
+
+            // 플레이어 선택 손 모양 중앙 출력
+            if (player_dir == 1) print_ascii_file("ascii-art (8).txt", mini_center - 29, 30);      // 오른쪽 손
+            else if (player_dir == 2) print_ascii_file("ascii-art (6).txt", mini_center - 29, 30); // 중앙 손
+            else if (player_dir == 3) print_ascii_file("ascii-art (7).txt", mini_center - 29, 30); // 왼쪽 손
+
+            set_color(FONT_COLOR_WHITE);
+
+            // 승패 판정 로직
+            if (player_dir == cat_dir)
+            {
+                // [수정] 성공 시 기존 브금을 멈추고 cat.wav(고양이 소리) 재생
+                PlaySound(TEXT("cat.wav"), NULL, SND_FILENAME | SND_ASYNC);
+                const char* win_msg = "참참참 성공! 고양이가 기분 좋게 그르릉 거립니다. (HP 15 회복)";
+                int msg_len = calculate_visual_length(win_msg);
+                move_cursor(mini_center - (msg_len / 2), 29);
+                set_color(FONT_COLOR_GREEN);
+                printf("%s", win_msg);
+                damage = -15;
+            }
+            else
+            {
+                // 실패 시 하악질 소리 재생 
+                PlaySound(TEXT("angry_cat.wav"), NULL, SND_FILENAME | SND_ASYNC);
+                int cat_damage = (rand() % 11) + 10;
+                char lose_msg[128];
+                sprintf(lose_msg, "참참참 실패! 고양이가 하악질을 하며 할큅니다. (HP %d 감소)", cat_damage);
+                int msg_len = calculate_visual_length(lose_msg);
+                move_cursor(mini_center - (msg_len / 2), 29);
+                set_color(FONT_COLOR_RED);
+                printf("%s", lose_msg);
+                damage = cat_damage;
+            }
+
+            Sleep(3000);
+            system("mode con cols=120 lines=30"); // 원래 창 크기로 복구
+            system("cls");
+
+            if (random_bgm == 0) {
+                PlaySound(TEXT("White Hats - Wayne Jones_[cut_99sec].wav"), NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
+            }
+            else {
+                PlaySound(TEXT("Propellerheads - Spybreak!_[cut_240sec].wav"), NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
+            }
+
+
+        }
+        // ==========================================
+
+        hp -= damage;
+
+        if (hp > 100)
+        {
+            hp = 100;
+        }
+        // [각주 28] 선택지별 효과음 분기: 특정 이벤트가 선택되면 효과음을 재생한 뒤 원래 BGM을 다시 이어 갑니다.
+
+        if (strstr(choices[selected_idx].text, "수상할 정도로 빨간 버튼을 누른다.") != NULL)
+        {
+            // 효과음 재생
+            PlaySound(TEXT("boom.wav"), NULL, SND_FILENAME | SND_ASYNC);
+            // 효과음이 대략 2초라고 가정
+           // 다시 BGM 루프 재생
+           // (현재 재생 중이던 BGM 파일명을 다시 넣어줍니다)
+            if (random_bgm == 0)
+            {
+                Sleep(1900);
+                PlaySound(TEXT("White Hats - Wayne Jones_[cut_99sec].wav"), NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
+            }
+            else {
+                Sleep(1900);
+                PlaySound(TEXT("Propellerheads - Spybreak!_[cut_240sec].wav"), NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
+            }
+
+        }
+
+        if (strstr(choices[selected_idx].text, "태양을 맨눈으로 10초 동안 바라본다.") != NULL)
+        {
+            PlaySound(TEXT("myeye!.wav"), NULL, SND_FILENAME | SND_ASYNC);
+
+            // 다시 BGM 루프 재생
+            // (현재 재생 중이던 BGM 파일명을 다시 넣어줍니다)
+            if (random_bgm == 0) {
+                Sleep(1900);
+                PlaySound(TEXT("White Hats - Wayne Jones_[cut_99sec].wav"), NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
+            }
+            else {
+                Sleep(1900);
+                PlaySound(TEXT("Propellerheads - Spybreak!_[cut_240sec].wav"), NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
+            }
+        }
+
+        if (strstr(choices[selected_idx].text, "%d의 속도로 달리는 차에 치인다.") != NULL)
+        {
+            // 효과음 재생
+            PlaySound(TEXT("car.wav"), NULL, SND_FILENAME | SND_ASYNC);
+            // 효과음이 대략 2초라고 가정
+           // 다시 BGM 루프 재생
+           // (현재 재생 중이던 BGM 파일명을 다시 넣어줍니다)
+            if (random_bgm == 0)
+            {
+                Sleep(4000);
+                PlaySound(TEXT("White Hats - Wayne Jones_[cut_99sec].wav"), NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
+            }
+            else {
+                Sleep(4000);
+                PlaySound(TEXT("Propellerheads - Spybreak!_[cut_240sec].wav"), NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
+            }
+
+        }
+
+        if (strstr(choices[selected_idx].text, "자판기에서 뽑은 제로 슈거 콜라를 시원하게 들이킨다.") != NULL)
+        {
+            // 효과음 재생
+            PlaySound(TEXT("Drinking.wav"), NULL, SND_FILENAME | SND_ASYNC);
+            // 효과음이 대략 2초라고 가정
+           // 다시 BGM 루프 재생
+           // (현재 재생 중이던 BGM 파일명을 다시 넣어줍니다)
+            if (random_bgm == 0)
+            {
+                Sleep(3000);
+                PlaySound(TEXT("White Hats - Wayne Jones_[cut_99sec].wav"), NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
+            }
+            else {
+                Sleep(3000);
+                PlaySound(TEXT("Propellerheads - Spybreak!_[cut_240sec].wav"), NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
+            }
+
+        }
+
+        if (strstr(choices[selected_idx].text, "편의점에서 이온음료를 마신다.") != NULL)
+        {
+            // 효과음 재생
+            PlaySound(TEXT("Drinking.wav"), NULL, SND_FILENAME | SND_ASYNC);
+            // 효과음이 대략 2초라고 가정
+           // 다시 BGM 루프 재생
+           // (현재 재생 중이던 BGM 파일명을 다시 넣어줍니다)
+            if (random_bgm == 0)
+            {
+                Sleep(3000);
+                PlaySound(TEXT("White Hats - Wayne Jones_[cut_99sec].wav"), NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
+            }
+            else {
+                Sleep(3000);
+                PlaySound(TEXT("Propellerheads - Spybreak!_[cut_240sec].wav"), NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
+            }
+
+        }
+
+
+
+        score += 1;
+        finalScore = score;
+
+        system("cls");
+
+        char result_msg[128];
+        if (damage < 0)
+        {
+            sprintf(result_msg, "선택 완료! HP가 %d 회복되었습니다.", -damage);
+        }
+        else
+        {
+            sprintf(result_msg, "선택 완료! HP가 %d 감소했습니다.", damage);
+        }
+
+        int res_len = calculate_visual_length(result_msg);
+        int res_x = center_x - (res_len / 2);
+
+        move_cursor(res_x, 12);
+        printf("%s", result_msg);
+
+        Sleep(2000);
+
+        while (_kbhit())
+        {
+            _getch();
+        }
+    }
+
+    finalScore = score;
+
     system("cls");
-    set_color(FONT_COLOR_RED);
-    move_cursor(54, 12);
-    printf("GAME OVER"); // 강렬하게 붉은색 게임오버 표시
+    set_color(FONT_COLOR_RED); move_cursor(95, 12); printf("GAME OVER");
 
-    set_color(FONT_COLOR_WHITE);
-    move_cursor(50, 14);
-    printf("최종 버틴 점수 : %d", score); // 그동안 버틴 횟수(최종 점수) 출력
+    set_color(FONT_COLOR_WHITE); move_cursor(90, 14); printf("최종 버틴 점수 : %d", score);
+    move_cursor(83, 18); printf("Backspace를 누르면 메뉴로 돌아갑니다.");
 
-    move_cursor(43, 18);
-    printf("Backspace를 누르면 메뉴로 돌아갑니다."); // 메뉴 복귀 안내
-
-    // Backspace를 누를 때까지 게임오버 화면을 유지하는 무한 대기 루프
     while (1)
     {
         key = _getch();
-        if (key == 8) // Backspace 입력 시
+        if (key == 8)
         {
-            break; // 루프 탈출
+            break;
         }
     }
 
-    system("cls"); // 지우고
-    return 0;      // Gamestart 함수 끝, 메인메뉴 복귀
-}
-
-// 메인 메뉴 4번 '게임 종료'를 눌렀을 때 실행되는 독특한 게임오버(엔딩) 크레딧 연출 함수
-int Gameover(void)
-{
-    int y = 30;  // 텍스트가 올라올 첫 번째 y 좌표 초기화
-    int yy = 30; // 텍스트가 올라올 두 번째 y 좌표 초기화
-    int While = 1; // 첫 번째 루프의 실행 조건 (1=참)
-    int Thile = 1; // 두 번째 루프의 실행 조건 (1=참)
-
-    system("cls"); // 화면 지우기
-
-    // 첫 번째 줄의 텍스트가 화면 밑바닥(y=30)에서부터 y=1까지 스르륵 올라가는 연출
-    while (While)
-    {
-        if (y != 1)
-        {
-            system("cls"); // 매 프레임마다 이전 화면 지움
-            move_cursor(42, y); // 텍스트 출력 위치를 한 칸 위로 갱신
-            printf("여기에 마무리 되는거 추가로 넣고 꺼지게 하기");
-            y--; // y좌표 1 감소 (화면상으로는 위로 이동)
-
-            Sleep(100); // 0.1초마다 갱신하여 애니메이션 효과 부여
-
-            if (y == 1) // 꼭대기에 도달하면
-            {
-                While = 0; // 루프 탈출
-            }
-        }
-    }
-
-    // 두 번째 줄의 텍스트가 밑에서부터 y=3까지 스르륵 올라오는 연출 (첫 번째 줄은 y=1에 고정)
-    while (Thile)
-    {
-        if (yy != 3)
-        {
-            system("cls");
-            move_cursor(42, y); // 위에서 꼭대기(y=1)에 멈춰있는 첫 번째 줄 계속 그림
-            printf("여기에 마무리 되는거 추가로 넣고 꺼지게 하기");
-
-            move_cursor(42, yy); // 밑바닥부터 올라오는 두 번째 줄 그리기
-            printf("여기에 마무리 되는거 추가로 넣고 꺼지게 하기");
-            yy--; // 두 번째 줄의 y좌표 1 감소 (위로 이동)
-
-            Sleep(100); // 0.1초 딜레이
-
-            if (yy == 3) // 목적지인 y=3에 도달하면
-            {
-                Thile = 0; // 두 번째 루프 탈출
-            }
-        }
-    }
-
-    Sleep(10000); // 두 줄이 완성된 화면 상태에서 10초(10000ms) 동안 대기하며 감상하게 함
-
-    exit(0); // C 표준 라이브러리 함수를 호출하여 콘솔 프로그램(게임) 자체를 완전히 종료함
-}
-
-// 매개변수로 ANSI 컬러 코드를 받아 콘솔 텍스트의 색상을 바꿔주는 유틸리티 함수
-void set_color(int code)
-{
-    printf("\x1b[%dm", code); // 콘솔에 ANSI 이스케이프 코드를 쏘아 터미널 색상을 변경
-}
-
-// 매개변수로 받은 X, Y 좌표값을 통해 ANSI 이스케이프 코드로 콘솔의 커서를 이동시키는 유틸리티 함수
-int move_cursor(int x, int y)
-{
-    printf("\033[%d;%dH", y, x); // y행, x열로 이동하는 ANSI 코드 출력
+    system("cls");
     return 0;
 }
 
-// C 프로그램의 실제 시작점(Entry Point)
+// [각주 29] 엔딩/크레딧 화면: 최종 점수와 제작자 정보를 스크롤 형태로 출력하고 프로그램을 종료합니다.
+int Gameover(void)
+{
+    const char* credits[] = {
+        "======================================",
+        "              GAME OVER               ",
+        "======================================",
+        "",
+        "       플레이 해주셔서 감사합니다!     ",
+        "",
+        "--------------------------------------",
+        "          [ PLAYER SCORE ]            ",
+        "",
+        "       플레이어: %s",
+        "       최종 점수: %d 점",
+        "--------------------------------------",
+        "",
+        "           [ DEVELOPERS ]             ",
+        "",
+        "        team 01 (ZERONE) 팀원들       ",
+        "",
+        "        마준서 (202617166) : 총괄     ",
+        "        백종화 (202617139) : 코드     ",
+        "        이인욱 (202619389) : 코드     ",
+        "        이준현 (202619549) : 디자인   ",
+        "",
+        "======================================",
+        "      잠시 후 게임이 종료됩니다.      ",
+        "====================================--"
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "XXXXX  XXXXX  XXXX   XXXXX  X   X  XXXXX",
+        "   X   X      X   X  X   X  XX  X  X    ",
+        "  X    XXXX   XXXX   X   X  X X X  XXXX ",
+        " X     X      X  X   X   X  X  XX  X    ",
+        "XXXXX  XXXXX  X   X  XXXXX  X   X  XXXXX"
+    };
+
+    int num_lines = sizeof(credits) / sizeof(credits[0]);
+
+    for (int i = SCREEN_HEIGHT; i >= -num_lines; i--)
+    {
+
+        printf("\x1b[2J\x1b[H");
+        set_color(FONT_COLOR_WHITE);
+
+        for (int j = 0; j < num_lines; j++)
+        {
+            int line_y = i + j;
+
+            if (line_y >= 0 && line_y < SCREEN_HEIGHT)
+            {
+                char formatted_line[256];
+
+                if (j == 9)
+                {
+                    sprintf(formatted_line, credits[j], playerName);
+                }
+                else if (j == 10)
+                {
+                    sprintf(formatted_line, credits[j], finalScore);
+                }
+                else
+                {
+                    strcpy(formatted_line, credits[j]);
+                }
+
+                int visual_len = calculate_visual_length(formatted_line);
+                int line_x = ((SCREEN_WIDTH - visual_len) / 2) + 40;
+                if (line_x < 1) line_x = 1;
+
+                move_cursor(line_x, line_y);
+                printf("%s", formatted_line);
+            }
+        }
+
+        move_cursor(SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1);
+        Sleep(150);
+    }
+
+    Sleep(2000);
+    system("cls");
+    exit(0);
+
+    return 0;
+}
+
+// [각주 30] 작은 유틸리티 함수들: 색상 변경, ANSI 커서 이동, 콘솔 정리처럼 여러 곳에서 쓰는 동작을 분리했습니다.
+void set_color(int code)
+{
+    printf("\x1b[%dm", code);
+}
+
+int move_cursor(int x, int y)
+{
+    printf("\033[%d;%dH", y, x);
+    return 0;
+}
+
+void cleanup_console(void) {
+    printf("\x1b[?1049l\x1b[0m");
+}
+
+// [각주 31] 프로그램 진입점: 콘솔 환경을 설정하고 상태값에 따라 로고, 메뉴, 소개, 설명, 게임, 종료 화면을 전환합니다.
 int main(void)
 {
-    // [중요] 프로그램 내내 콘솔 출력을 UTF-8 모드로 고정. (ta.txt 등 읽을 때 한글 특수문자 깨짐 방지용)
+    printf("\x1b[2J\x1b[?1049h");
     SetConsoleOutputCP(CP_UTF8);
+    SetConsoleCP(CP_UTF8);
+    atexit(cleanup_console);
 
-    int gameStatus = 0; // 현재 진행해야 하는 게임의 상태 및 메뉴 코드를 기억할 변수
+    int gameStatus = 0;
+    int isBgmPlaying = 0;
 
-    ShowLogo(); // 게임 실행 직후, 웅장한 로고 및 "전체화면" 안내 메시지를 한 번 띄움
+    ShowLogo();
 
-    // isRunning 플래그가 참(1)인 동안은 게임 메인 메뉴가 꺼지지 않고 계속 동작하는 무한루프
+    set_color(FONT_COLOR_WHITE);
+    move_cursor(80, 26);
+    printf("플레이어의 닉네임을 입력하세요: ");
+    set_color(FONT_COLOR_YELLOW);
+    scanf("%49s", playerName);
+
+    while (getchar() != '\n');
+    system("cls");
+
     while (isRunning)
     {
-        // gameStatus 변수의 값에 따라 어떤 화면(함수)을 실행할지 결정
         switch (gameStatus)
         {
         case 0:
-            // 0일 땐 메인 메뉴를 그리고, 사용자가 고른 메뉴의 반환값(1~4)을 gameStatus에 대입함
+
+            if (!isBgmPlaying) {
+                PlaySound(TEXT("il-vento-doro.wav"), NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
+                isBgmPlaying = 1;
+            }
+
+            printf("\x1b[H");
             gameStatus = RenderTitle();
             break;
 
         case 1:
-            // 반환값이 1이면, [교체된] txt 파일 기반 '만든 사람 및 팀 소개' 로직 진입
             gameStatus = People();
             break;
+
         case 2:
-            // 반환값이 2이면, 2페이지짜리 '설명서' 화면 진입
             gameStatus = Manual();
             break;
+
         case 3:
-            // 반환값이 3이면, 실제 게임 플레이 루프 (Gamestart) 진입
+            PlaySound(NULL, NULL, 0);
+            isBgmPlaying = 0;
+
             gameStatus = Gamestart();
             break;
+
         case 4:
-            // 반환값이 4이면, 게임 오버/엔딩 크레딧 화면(Gameover) 재생 후 자동 프로그램 종료
             gameStatus = Gameover();
             break;
         }
     }
 
-    // (ESC 등을 눌러 isRunning이 0이 되어 정상적으로 while을 빠져나온 경우)
-    system("cls"); // 콘솔 화면을 완전히 지움
-    move_cursor(0, 25); // 마지막 안내(혹은 종료 메시지)가 깔끔하게 보이도록 콘솔 밑으로 커서를 치움
+    system("cls");
+    move_cursor(0, 25);
 
-    return 0; // 프로그램 운영체제에 정상 종료(0) 신호를 반환하며 프로그램 마무리
+    return 0;
 }
