@@ -695,7 +695,7 @@ int Gamestart(void)
 
             int line_width = calculate_visual_length(buffer);
             if (line_width > intro_max_width) intro_max_width = line_width;
-
+             
             intro_line_count++;
         }
         fclose(fp);
@@ -855,7 +855,7 @@ int Gamestart(void)
         int auto_selected_idx = (left_auto_damage >= right_auto_damage) ? left_idx : right_idx;
         int has_selected = 0;
         int selected_idx = 0;
-        int timeout_seconds = 7;
+        int timeout_seconds = 2;
         int last_remaining = -1;
         int timer_x = hud_x + player_hud_len + hud_gap + hp_hud_len + hud_gap + score_hud_len + 12;
         DWORD start_tick = GetTickCount();
