@@ -1,19 +1,19 @@
-#pragma execution_character_set("utf-8") // ÄÜ¼Ö Ã¢¿¡¼­ ÇÑ±ÛÀÌ ±úÁö´Â Çö»óÀ» ¹æÁöÇÏ±â À§ÇØ Ãâ·Â ÀÎÄÚµùÀ» UTF-8·Î ÁöÁ¤ÇÕ´Ï´Ù.
-#define _CRT_SECURE_NO_WARNINGS          // fopen µîÀÇ Ç¥ÁØ ÇÔ¼ö »ç¿ë ½Ã ºñÁÖ¾ó ½ºÆ©µğ¿À¿¡¼­ º¸¾È °æ°í(¿¡·¯)°¡ ³ª´Â °ÍÀ» ¸·¾ÆÁİ´Ï´Ù.
+ï»¿#pragma execution_character_set("utf-8") // ì½˜ì†” ì°½ì—ì„œ í•œê¸€ì´ ê¹¨ì§€ëŠ” í˜„ìƒì„ ë°©ì§€í•˜ê¸° ìœ„í•´ ì¶œë ¥ ì¸ì½”ë”©ì„ UTF-8ë¡œ ì§€ì •í•©ë‹ˆë‹¤.
+#define _CRT_SECURE_NO_WARNINGS          // fopen ë“±ì˜ í‘œì¤€ í•¨ìˆ˜ ì‚¬ìš© ì‹œ ë¹„ì£¼ì–¼ ìŠ¤íŠœë””ì˜¤ì—ì„œ ë³´ì•ˆ ê²½ê³ (ì—ëŸ¬)ê°€ ë‚˜ëŠ” ê²ƒì„ ë§‰ì•„ì¤ë‹ˆë‹¤.
 
-#include <stdio.h>    // printf(Ãâ·Â), fopen(ÆÄÀÏ ¿­±â) °°Àº ±âº»ÀûÀÎ ÀÔÃâ·Â ÇÔ¼öµéÀ» ¾²±â À§ÇØ °¡Á®¿É´Ï´Ù.
-#include <string.h>   // strlen(±æÀÌ °è»ê), strstr(±ÛÀÚ Ã£±â) °°Àº ¹®ÀÚ¿­ Ã³¸® ÇÔ¼öµéÀ» ¾²±â À§ÇØ °¡Á®¿É´Ï´Ù.
-#include <windows.h>  // SetConsoleCursorPosition(Ä¿¼­ ÀÌµ¿) µî À©µµ¿ì ½Ã½ºÅÛ Á¦¾î ±â´ÉÀ» ¾²±â À§ÇØ °¡Á®¿É´Ï´Ù.
-#include <conio.h>    // _getch(Å°º¸µå ÀÔ·Â ½Ç½Ã°£ °¨Áö) ÇÔ¼ö¸¦ »ç¿ëÇÏ±â À§ÇØ °¡Á®¿É´Ï´Ù.
-#include <stdlib.h>   // rand(·£´ı ¼ıÀÚ), system(¸í·É¾î ½ÇÇà), exit(Á¾·á) ÇÔ¼ö¸¦ ¾²±â À§ÇØ °¡Á®¿É´Ï´Ù.
-#include <time.h>     // time(ÇöÀç ½Ã°£) ÇÔ¼ö¸¦ »ç¿ëÇÏ¿© ¸Å¹ø ´Ù¸¥ ·£´ı ½Ãµå °ªÀ» ÁÖ±â À§ÇØ °¡Á®¿É´Ï´Ù.
-#include <mmsystem.h> // PlaySound ÇÔ¼ö¸¦ ÀÌ¿ëÇØ .wav À½¿øÀ» Àç»ıÇÏ±â À§ÇØ °¡Á®¿É´Ï´Ù.
+#include <stdio.h>    // printf(ì¶œë ¥), fopen(íŒŒì¼ ì—´ê¸°) ê°™ì€ ê¸°ë³¸ì ì¸ ì…ì¶œë ¥ í•¨ìˆ˜ë“¤ì„ ì“°ê¸° ìœ„í•´ ê°€ì ¸ì˜µë‹ˆë‹¤.
+#include <string.h>   // strlen(ê¸¸ì´ ê³„ì‚°), strstr(ê¸€ì ì°¾ê¸°) ê°™ì€ ë¬¸ìì—´ ì²˜ë¦¬ í•¨ìˆ˜ë“¤ì„ ì“°ê¸° ìœ„í•´ ê°€ì ¸ì˜µë‹ˆë‹¤.
+#include <windows.h>  // SetConsoleCursorPosition(ì»¤ì„œ ì´ë™) ë“± ìœˆë„ìš° ì‹œìŠ¤í…œ ì œì–´ ê¸°ëŠ¥ì„ ì“°ê¸° ìœ„í•´ ê°€ì ¸ì˜µë‹ˆë‹¤.
+#include <conio.h>    // _getch(í‚¤ë³´ë“œ ì…ë ¥ ì‹¤ì‹œê°„ ê°ì§€) í•¨ìˆ˜ë¥¼ ì‚¬ìš©í•˜ê¸° ìœ„í•´ ê°€ì ¸ì˜µë‹ˆë‹¤.
+#include <stdlib.h>   // rand(ëœë¤ ìˆ«ì), system(ëª…ë ¹ì–´ ì‹¤í–‰), exit(ì¢…ë£Œ) í•¨ìˆ˜ë¥¼ ì“°ê¸° ìœ„í•´ ê°€ì ¸ì˜µë‹ˆë‹¤.
+#include <time.h>     // time(í˜„ì¬ ì‹œê°„) í•¨ìˆ˜ë¥¼ ì‚¬ìš©í•˜ì—¬ ë§¤ë²ˆ ë‹¤ë¥¸ ëœë¤ ì‹œë“œ ê°’ì„ ì£¼ê¸° ìœ„í•´ ê°€ì ¸ì˜µë‹ˆë‹¤.
+#include <mmsystem.h> // PlaySound í•¨ìˆ˜ë¥¼ ì´ìš©í•´ .wav ìŒì›ì„ ì¬ìƒí•˜ê¸° ìœ„í•´ ê°€ì ¸ì˜µë‹ˆë‹¤.
 
-#pragma comment(lib, "winmm.lib") // Windows ¸ÖÆ¼¹Ìµğ¾î »ç¿îµå ¶óÀÌºê·¯¸®¸¦ ¸µÅ© ¼­ºê½Ã½ºÅÛ¿¡ µî·ÏÇÕ´Ï´Ù.
+#pragma comment(lib, "winmm.lib") // Windows ë©€í‹°ë¯¸ë””ì–´ ì‚¬ìš´ë“œ ë¼ì´ë¸ŒëŸ¬ë¦¬ë¥¼ ë§í¬ ì„œë¸Œì‹œìŠ¤í…œì— ë“±ë¡í•©ë‹ˆë‹¤.
 
-#define COLOR_RESET "\x1b[0m" // º¯°æµÈ ±ÛÀÚ³ª ¹è°æ »ö»óÀ» ´Ù½Ã ÄÜ¼Ö ±âº» »ö»óÀ¸·Î µÇµ¹¸®´Â Æ¯¼ö ¹®ÀÚ¿­ÀÔ´Ï´Ù.
+#define COLOR_RESET "\x1b[0m" // ë³€ê²½ëœ ê¸€ìë‚˜ ë°°ê²½ ìƒ‰ìƒì„ ë‹¤ì‹œ ì½˜ì†” ê¸°ë³¸ ìƒ‰ìƒìœ¼ë¡œ ë˜ëŒë¦¬ëŠ” íŠ¹ìˆ˜ ë¬¸ìì—´ì…ë‹ˆë‹¤.
 
-// ÄÜ¼ÖÃ¢ÀÇ ±ÛÀÚ »ö»ó°ú ¹è°æ »ö»óÀ» °£ÆíÇÏ°Ô ¹Ù²Ù±â À§ÇØ ANSI ÄÚµå¸¦ ¼ıÀÚ·Î Á¤ÀÇÇØ µĞ °ÍÀÔ´Ï´Ù.
+// ì½˜ì†”ì°½ì˜ ê¸€ì ìƒ‰ìƒê³¼ ë°°ê²½ ìƒ‰ìƒì„ ê°„í¸í•˜ê²Œ ë°”ê¾¸ê¸° ìœ„í•´ ANSI ì½”ë“œë¥¼ ìˆ«ìë¡œ ì •ì˜í•´ ë‘” ê²ƒì…ë‹ˆë‹¤.
 #define FONT_COLOR_BLACK 30
 #define BG_COLOR_BLACK 40
 #define FONT_COLOR_RED 31
@@ -31,14 +31,14 @@
 #define FONT_COLOR_WHITE 37
 #define BG_COLOR_WHITE 47
 
-#define Backspace 8 // Å°º¸µåÀÇ ¹é½ºÆäÀÌ½º Å°°¡ °¡Áö´Â °íÀ¯ ¾Æ½ºÅ°ÄÚµå ¹øÈ£(8)¸¦ ¾Ë¾Æº¸±â ½±°Ô ÀÌ¸§À» ºÙÀÎ °ÍÀÔ´Ï´Ù.
+#define Backspace 8 // í‚¤ë³´ë“œì˜ ë°±ìŠ¤í˜ì´ìŠ¤ í‚¤ê°€ ê°€ì§€ëŠ” ê³ ìœ  ì•„ìŠ¤í‚¤ì½”ë“œ ë²ˆí˜¸(8)ë¥¼ ì•Œì•„ë³´ê¸° ì‰½ê²Œ ì´ë¦„ì„ ë¶™ì¸ ê²ƒì…ë‹ˆë‹¤.
 
-#define SCREEN_WIDTH 120  // ÀÌ ÇÁ·Î±×·¥ÀÌ »ç¿ëÇÏ´Â °¡»ó ÄÜ¼Ö È­¸éÀÇ ÃÖ´ë °¡·Î Ä­(Æø)À» 120Ä­À¸·Î Á¤ÇÕ´Ï´Ù.
-#define SCREEN_HEIGHT 30  // ÀÌ ÇÁ·Î±×·¥ÀÌ »ç¿ëÇÏ´Â °¡»ó ÄÜ¼Ö È­¸éÀÇ ÃÖ´ë ¼¼·Î ÁÙ(³ôÀÌ)À» 30ÁÙ·Î Á¤ÇÕ´Ï´Ù.
+#define SCREEN_WIDTH 120  // ì´ í”„ë¡œê·¸ë¨ì´ ì‚¬ìš©í•˜ëŠ” ê°€ìƒ ì½˜ì†” í™”ë©´ì˜ ìµœëŒ€ ê°€ë¡œ ì¹¸(í­)ì„ 120ì¹¸ìœ¼ë¡œ ì •í•©ë‹ˆë‹¤.
+#define SCREEN_HEIGHT 30  // ì´ í”„ë¡œê·¸ë¨ì´ ì‚¬ìš©í•˜ëŠ” ê°€ìƒ ì½˜ì†” í™”ë©´ì˜ ìµœëŒ€ ì„¸ë¡œ ì¤„(ë†’ì´)ì„ 30ì¤„ë¡œ ì •í•©ë‹ˆë‹¤.
 #define SAVE_SCREEN_WIDTH 240
 #define SAVE_SCREEN_HEIGHT 80
 
-// ÇÁ·Î±×·¥ ¾È¿¡¼­ »ç¿ëÇÒ ±â´É(ÇÔ¼ö)µéÀÇ ¸ñÂ÷¸¦ ÄÄÆÄÀÏ·¯¿¡°Ô ¹Ì¸® ¾Ë·ÁÁÖ´Â ¼±¾ğºÎÀÔ´Ï´Ù.
+// í”„ë¡œê·¸ë¨ ì•ˆì—ì„œ ì‚¬ìš©í•  ê¸°ëŠ¥(í•¨ìˆ˜)ë“¤ì˜ ëª©ì°¨ë¥¼ ì»´íŒŒì¼ëŸ¬ì—ê²Œ ë¯¸ë¦¬ ì•Œë ¤ì£¼ëŠ” ì„ ì–¸ë¶€ì…ë‹ˆë‹¤.
 void set_color(int code);
 int move_cursor(int x, int y);
 void gotoxy(int x, int y);
@@ -55,55 +55,60 @@ int calculate_visual_length(const char* str);
 void get_content_stats(const char* str, int* visual_prefix, int* visual_content);
 void print_ascii_file(const char* filename, int start_x, int start_y);
 
-// °ÔÀÓ ÀüÃ¼¿¡¼­ °øÀ¯ÇÏ¸ç »ç¿ëÇÒ Àü¿ª º¯¼öµéÀÔ´Ï´Ù.
+// ê²Œì„ ì „ì²´ì—ì„œ ê³µìœ í•˜ë©° ì‚¬ìš©í•  ì „ì—­ ë³€ìˆ˜ë“¤ì…ë‹ˆë‹¤.
 int menu = 1;
 int isRunning = 1;
 char playerName[50] = "Player";
 int finalScore = 0;
 
-// °ÔÀÓ Áß ¸Å ¶ó¿îµå¸¶´Ù ¹«ÀÛÀ§·Î ³ª¿Ã '¼±ÅÃÁö Á¤º¸'¸¦ ÇÏ³ª·Î ¹­¾îµĞ ±¸Á¶Ã¼ ¾ç½ÄÀÔ´Ï´Ù.
+// ê²Œì„ ì¤‘ ë§¤ ë¼ìš´ë“œë§ˆë‹¤ ë¬´ì‘ìœ„ë¡œ ë‚˜ì˜¬ 'ì„ íƒì§€ ì •ë³´'ë¥¼ í•˜ë‚˜ë¡œ ë¬¶ì–´ë‘” êµ¬ì¡°ì²´ ì–‘ì‹ì…ë‹ˆë‹¤.
 typedef struct
 {
-    const char* art[6]; // ¼±ÅÃÁö À§¿¡ ±×·ÁÁú ¾Æ½ºÅ°¾ÆÆ® ±×¸² µ¥ÀÌÅÍÀÔ´Ï´Ù. (ÃÖ´ë 6ÁÙ±îÁö ÀúÀå)
-    const char* text;   // ¼±ÅÃÁö¿¡ ´ëÇÑ ¼³¸í ±ÛÀÚÀÔ´Ï´Ù. 
-    int min_damage;     // ÀÌ Çàµ¿À» °ñ¶úÀ» ¶§ ÃÖ¼ÒÇÑÀ¸·Î ¹Ş´Â ÇÇÇØ Ã¼·Â·®ÀÔ´Ï´Ù. 
-    int max_damage;     // ÀÌ Çàµ¿À» °ñ¶úÀ» ¶§ ÃÖ´ëÇÑÀ¸·Î ¹Ş´Â ÇÇÇØ Ã¼·Â·®ÀÔ´Ï´Ù. 
+    const char* art[6]; // ì„ íƒì§€ ìœ„ì— ê·¸ë ¤ì§ˆ ì•„ìŠ¤í‚¤ì•„íŠ¸ ê·¸ë¦¼ ë°ì´í„°ì…ë‹ˆë‹¤. (ìµœëŒ€ 6ì¤„ê¹Œì§€ ì €ì¥)
+    const char* text;   // ì„ íƒì§€ì— ëŒ€í•œ ì„¤ëª… ê¸€ìì…ë‹ˆë‹¤. 
+    int min_damage;     // ì´ í–‰ë™ì„ ê³¨ëì„ ë•Œ ìµœì†Œí•œìœ¼ë¡œ ë°›ëŠ” í”¼í•´ ì²´ë ¥ëŸ‰ì…ë‹ˆë‹¤. 
+    int max_damage;     // ì´ í–‰ë™ì„ ê³¨ëì„ ë•Œ ìµœëŒ€í•œìœ¼ë¡œ ë°›ëŠ” í”¼í•´ ì²´ë ¥ëŸ‰ì…ë‹ˆë‹¤. 
 } Choice;
 
-// °ÔÀÓ¿¡ µîÀåÇÏ°Ô µÉ ±â»óÃµ¿ÜÇÑ ¼±ÅÃÁöµéÀÇ ½ÇÁ¦ µ¥ÀÌÅÍµéÀ» ¸ğ¾Æ³õÀº ¹è¿­ÀÔ´Ï´Ù.
+// ê²Œì„ì— ë“±ì¥í•˜ê²Œ ë  ê¸°ìƒì²œì™¸í•œ ì„ íƒì§€ë“¤ì˜ ì‹¤ì œ ë°ì´í„°ë“¤ì„ ëª¨ì•„ë†“ì€ ë°°ì—´ì…ë‹ˆë‹¤.
 Choice choices[] =
 {
-    { {"  /\\_/\\  ", " ( o.o ) ", "  > ^ <  ", "         ", "         ", "         "}, "±Í¿©¿î ±æ°í¾çÀÌ¸¦ ¾²´Ùµë´Â´Ù.", 1, 5 },
-    { {"   ___   ", "  / _ \\  ", " | (_) | ", "  \\___/  ", "         ", "         "}, "¼ö»óÇÒ Á¤µµ·Î »¡°£ ¹öÆ°À» ´©¸¥´Ù.", 3, 9 },
-    { {"  ====   ", " |    |  ", " |    |  ", "  ====   ", "         ", "         "}, "ÀÚÆÇ±â ¹Ø¿¡¼­ µ¿ÀüÀ» Áİ´Â´Ù.", 0, 2 },
-    { {"   \\|/   ", "  - O -  ", "   /|\\   ", "         ", "         ", "         "}, "ÅÂ¾çÀ» ¸Ç´«À¸·Î 10ÃÊ µ¿¾È ¹Ù¶óº»´Ù.", 8, 12 },
-    { {"  [___]  ", "  |   |  ", "  |___|  ", "         ", "         ", "         "}, "À¯Åë±âÇÑÀÌ 3³â Áö³­ ÅëÁ¶¸²À» ¸Ô´Â´Ù.", 5, 15 },
-    { {"  _||_   ", " |    |  ", " |    |  ", " |    |  ", " |____|  ", "         "}, "%dÃş¿¡¼­ ¶³¾îÁ³´Ù.", 2, 10 },
-    { {"  ::    ::  ", ": ::::::::::","..::::::::::"," :::::::::: ","   ::::::   ","     ::     "}, "¾Õ¿¡ Ä¿ÇÃÀÌ Áö³ª°¡´Â °É º»´Ù.", 4, 10},
+    { {" â €â €â €â €â €â£„â €â €â €â €â €â €â €â£ â¡€â €â €â €â €â €â €",
+    "â €â €  â¢°â â¢§â €â €â €â €â €â¡°â â¢•â €â €â €â €",
+    "â € â € â¡â €â ˜â –â ’â ’â ’â ’â ƒâ €â¢¸â¡€â €â €",
+    "   â “â£®â¡€â €â €â €â €â €â €â €â €â¢€â¡ â¢¾â Šâ €â €",
+    "  â ‰â¢»â¢’â €â €â ºâ ‡â €â €â €â ¹â ‡â €â ’â šâ¡â ",
+    "â € â ‰â¡â â €â €â €â €â €â €â €â €â €â €â ˆâ ‰â¡Ÿâ ‚",}, "ê·€ì—¬ìš´ ê¸¸ê³ ì–‘ì´ë¥¼ ì“°ë‹¤ë“¬ëŠ”ë‹¤.", 1, 5},
+    { {"   ___   ", "  / _ \\  ", " | (_) | ", "  \\___/  ", "         ", "         "}, "ìˆ˜ìƒí•  ì •ë„ë¡œ ë¹¨ê°„ ë²„íŠ¼ì„ ëˆ„ë¥¸ë‹¤.", 3, 9 },
+    { {"  ====   ", " |    |  ", " |    |  ", "  ====   ", "         ", "         "}, "ìíŒê¸° ë°‘ì—ì„œ ë™ì „ì„ ì¤ëŠ”ë‹¤.", 0, 2 },
+    { {"   \\|/   ", "  - O -  ", "   /|\\   ", "         ", "         ", "         "}, "íƒœì–‘ì„ ë§¨ëˆˆìœ¼ë¡œ 10ì´ˆ ë™ì•ˆ ë°”ë¼ë³¸ë‹¤.", 8, 12 },
+    { {"  [___]  ", "  |   |  ", "  |___|  ", "         ", "         ", "         "}, "ìœ í†µê¸°í•œì´ 3ë…„ ì§€ë‚œ í†µì¡°ë¦¼ì„ ë¨¹ëŠ”ë‹¤.", 5, 15 },
+    { {"  _||_   ", " |    |  ", " |    |  ", " |    |  ", " |____|  ", "         "}, "%dì¸µì—ì„œ ë–¨ì–´ì¡Œë‹¤.", 2, 10 },
+    { {"  ::    ::  ", ": ::::::::::","..::::::::::"," :::::::::: ","   ::::::   ","     ::     "}, "ì•ì— ì»¤í”Œì´ ì§€ë‚˜ê°€ëŠ” ê±¸ ë³¸ë‹¤.", 4, 10},
     { {
         "       ***++++++++#*++++++++** ",
         "       #**++++++++**++++++++** ",
         " #***********************************",
         " ***********************************#",
         " *****%@@@@%*************#@@@@@%**** ",
-        " #***#@#   @@************@@   #@#***#",}, "%dÀÇ ¼Óµµ·Î ´Ş¸®´Â Â÷¿¡ Ä¡ÀÎ´Ù.", 20, 50},
-    { { "  _.-._  ", " / * * \\\\ ", " |  * | ", " '-._.-' ", "   | |   ", "   |_|   " }, "Çü±¤ºûÀÌ ³ª´Â Á¤Ã¼ºÒ¸íÀÇ ¹ö¼¸À» ¾Ã¾î¸Ô´Â´Ù.", 5, 15 },
-    { { "   ___   ", "  (o_o)  ", " /|   |\\\\ ", "  |___|  ", "   ^ ^   ", "         " }, "±ÙÀ°Áú ºñµÑ±â°¡ ³¯¾Æ¿Í ³» »§À» »¯¾î°£´Ù.", 3, 7 },
-    { { "   \\\\_    ", "   /     ", "  /___   ", "    /    ", "   /     ", "  * " }, "¸¶¸¥ÇÏ´Ã¿¡ ¶³¾îÁö´Â º­¶ôÀ» ÇÇÇÏÁö ¸øÇß´Ù.", 20, 40 },
-    { { "  ___    ", " |   |   ", " |SSR|   ", " |___|   ", "         ", "         " }, "ÁÖ¿î ½º¸¶Æ®ÆùÀ¸·Î °¡Ã­¸¦ µ¹·ÈÀ¸³ª ´ëÆø»çÇß´Ù.", 2, 8 },
-    { { "  _^_    ", " /_ _\\\\   ", "  | |    ", "  | |    ", "         ", "         " }, "Áö³ª°¡´ø ¿Ü°èÀÎ°ú ´«ÀÌ ¸¶ÁÖÃÄ ±â°¡ »¡¸°´Ù.", 8, 15 },
-    { { "         ", "  ____   ", " /o  o\\\\  ", " \\\\____/  ", "         ", "         " }, "¹ß¹Ø¿¡ ÀÖ´ø ½½¶óÀÓÀ» ¹â°í È­·ÁÇÏ°Ô ¹Ì²ô·¯Á³´Ù.", 1, 5 },
-    { { "         ", "         ", "    _    ", "  _| |_  ", " |_____| ", "  !!!    " }, "¹®Áö¹æ¿¡ »õ³¢¹ß°¡¶ôÀ» ¹«ÀÚºñÇÏ°Ô Âö¾ú´Ù.", 15, 25 },
-    { { "   ( (   ", "    ) )  ", "  ____   ", " |    |  ", " |____|  ", "         " }, "»õ·Î »ê Èò ¿Ê¿¡ ¶ß°Å¿î ¾Æ¸Ş¸®Ä«³ë¸¦ ½ñ´Â´Ù.", 5, 10 },
-    { { " _______ ", " | >_  | ", " |ERROR| ", " |_____| ", "  =====  ", "         " }, "C++ ÄÄÆÄÀÏ Áß ¿øÀÎÀ» ¾Ë ¼ö ¾ø´Â ¿À·ù°¡ »Õ¾îÁ® ³ª¿Â´Ù.", 8, 15 },
-    { { "  ___    ", " |   |   ", " |___|   ", "   \\\\    ", " (x_x)   ", "         " }, "´©¿ö¼­ ½º¸¶Æ®ÆùÀ» º¸´Ù ¾ó±¼¿¡ Á¤ÅëÀ¸·Î ¶³¾î¶ß·È´Ù.", 3, 8 },
-    { { "  ____   ", " |    |  ", " |____|  ", "  O  O   ", "   ==3   ", "         " }, "´«¾Õ¿¡¼­ Å¸¾ß ÇÒ ¹ö½º°¡ ¹®À» ´İ°í ¹«½ÉÇÏ°Ô Ãâ¹ßÇØ¹ö·È´Ù.", 2, 6 },
-    // === [ È¸º¹ ÀÌº¥Æ® ] ===
-    { { "  ___    ", " |   |   ", " |ZRO|   ", " |___|   ", "         ", "         " }, "ÀÚÆÇ±â¿¡¼­ »ÌÀº Á¦·Î ½´°Å Äİ¶ó¸¦ ½Ã¿øÇÏ°Ô µéÀÌÅ²´Ù.", -10, -5 },
-    { { "  ___    ", " | + |   ", " |___|   ", "         ", "         ", "         " }, "¹ö·ÁÁø ±¸±Ş»óÀÚ¿¡¼­ »Ç·Î·Î ¹İÃ¢°í¸¦ Ã£¾Æ ºÙÀÎ´Ù.", -12, -7 },
-    { { "  ++++   ", "  +HP+  ", "  ++++   ", "         ", "         ", "         " }, "¾à±¹¿¡¼­ ÁøÅëÁ¦¸¦ º¹¿ëÇÑ´Ù.", -15, -10 },
-    { { "  [###]  ", "  |   |  ", "  |___|  ", "         ", "         ", "         " }, "ÆíÀÇÁ¡¿¡¼­ ÀÌ¿ÂÀ½·á¸¦ ¸¶½Å´Ù.", -8, -3 },
-    { { "  Zzz..  ", "  (-_-)  ", "  /| |\\  ", "         ", "         ", "         " }, "Àá±ñ ¾É¾Æ¼­ ÈŞ½ÄÀ» ÃëÇÑ´Ù.", -8, -4 },
+        " #***#@#   @@************@@   #@#***#",}, "%dì˜ ì†ë„ë¡œ ë‹¬ë¦¬ëŠ” ì°¨ì— ì¹˜ì¸ë‹¤.", 20, 50},
+    { { "  _.-._  ", " // * * \\\\ ", " |  *  | ", " '-._.-' ", "   | |   ", "   |_|   " }, "í˜•ê´‘ë¹›ì´ ë‚˜ëŠ” ì •ì²´ë¶ˆëª…ì˜ ë²„ì„¯ì„ ì”¹ì–´ë¨¹ëŠ”ë‹¤.", 5, 15 },
+    { { "   ___   ", "  (o_o)  ", " /|   |\\\\ ", "  |___|  ", "   ^ ^   ", "         " }, "ê·¼ìœ¡ì§ˆ ë¹„ë‘˜ê¸°ê°€ ë‚ ì•„ì™€ ë‚´ ë¹µì„ ëºì–´ê°„ë‹¤.", 3, 7 },
+    { { "   \\\\_    ", "   /     ", "  /___   ", "    /    ", "   /     ", "  * " }, "ë§ˆë¥¸í•˜ëŠ˜ì— ë–¨ì–´ì§€ëŠ” ë²¼ë½ì„ í”¼í•˜ì§€ ëª»í–ˆë‹¤.", 20, 40 },
+    { { "  ___    ", " |   |   ", " |SSR|   ", " |___|   ", "         ", "         " }, "ì£¼ìš´ ìŠ¤ë§ˆíŠ¸í°ìœ¼ë¡œ ê°€ì± ë¥¼ ëŒë ¸ìœ¼ë‚˜ ëŒ€í­ì‚¬í–ˆë‹¤.", 2, 8 },
+    { { "  _^_    ", " //_ _\\\\   ", "  | |    ", "  | |    ", "         ", "         " }, "ì§€ë‚˜ê°€ë˜ ì™¸ê³„ì¸ê³¼ ëˆˆì´ ë§ˆì£¼ì³ ê¸°ê°€ ë¹¨ë¦°ë‹¤.", 8, 15 },
+    { { "         ", "  ____   ", " /o  o\\\\  ", " \\\\____/  ", "         ", "         " }, "ë°œë°‘ì— ìˆë˜ ìŠ¬ë¼ì„ì„ ë°Ÿê³  í™”ë ¤í•˜ê²Œ ë¯¸ë„ëŸ¬ì¡Œë‹¤.", 1, 5 },
+    { { "         ", "         ", "    _    ", "  _| |_  ", " |_____| ", "  !!!    " }, "ë¬¸ì§€ë°©ì— ìƒˆë¼ë°œê°€ë½ì„ ë¬´ìë¹„í•˜ê²Œ ì°§ì—ˆë‹¤.", 15, 25 },
+    { { "   ( (   ", "    ) )  ", "  ____   ", " |    |  ", " |____|  ", "         " }, "ìƒˆë¡œ ì‚° í° ì˜·ì— ëœ¨ê±°ìš´ ì•„ë©”ë¦¬ì¹´ë…¸ë¥¼ ìŸëŠ”ë‹¤.", 5, 10 },
+    { { " _______ ", " | >_  | ", " |ERROR| ", " |_____| ", "  =====  ", "         " }, "C++ ì»´íŒŒì¼ ì¤‘ ì›ì¸ì„ ì•Œ ìˆ˜ ì—†ëŠ” ì˜¤ë¥˜ê°€ ë¿œì–´ì ¸ ë‚˜ì˜¨ë‹¤.", 8, 15 },
+    { { "  ___    ", " |   |   ", " |___|   ", "   \\\\    ", " (x_x)   ", "         " }, "ëˆ„ì›Œì„œ ìŠ¤ë§ˆíŠ¸í°ì„ ë³´ë‹¤ ì–¼êµ´ì— ì •í†µìœ¼ë¡œ ë–¨ì–´ëœ¨ë ¸ë‹¤.", 3, 8 },
+    { { "  ____   ", " |    |  ", " |____|  ", "  O  O   ", "   ==3   ", "         " }, "ëˆˆì•ì—ì„œ íƒ€ì•¼ í•  ë²„ìŠ¤ê°€ ë¬¸ì„ ë‹«ê³  ë¬´ì‹¬í•˜ê²Œ ì¶œë°œí•´ë²„ë ¸ë‹¤.", 2, 6 },
+    // === [ íšŒë³µ ì´ë²¤íŠ¸ ] ===
+    { { "  ___    ", " |   |   ", " |ZRO|   ", " |___|   ", "         ", "         " }, "ìíŒê¸°ì—ì„œ ë½‘ì€ ì œë¡œ ìŠˆê±° ì½œë¼ë¥¼ ì‹œì›í•˜ê²Œ ë“¤ì´í‚¨ë‹¤.", -10, -5 },
+    { { "  ___    ", " | + |   ", " |___|   ", "         ", "         ", "         " }, "ë²„ë ¤ì§„ êµ¬ê¸‰ìƒìì—ì„œ ë½€ë¡œë¡œ ë°˜ì°½ê³ ë¥¼ ì°¾ì•„ ë¶™ì¸ë‹¤.", -12, -7 },
+    { { "  ++++   ", "  +HP+  ", "  ++++   ", "         ", "         ", "         " }, "ì•½êµ­ì—ì„œ ì§„í†µì œë¥¼ ë³µìš©í•œë‹¤.", -15, -10 },
+    { { "  [###]  ", "  |   |  ", "  |___|  ", "         ", "         ", "         " }, "í¸ì˜ì ì—ì„œ ì´ì˜¨ìŒë£Œë¥¼ ë§ˆì‹ ë‹¤.", -8, -3 },
+    { { "  Zzz..  ", "  (-_-)  ", "  /| |\\  ", "         ", "         ", "         " }, "ì ê¹ ì•‰ì•„ì„œ íœ´ì‹ì„ ì·¨í•œë‹¤.", -8, -4 },
 
 };
 
@@ -112,14 +117,14 @@ CHAR_INFO savedScreen[SAVE_SCREEN_WIDTH * SAVE_SCREEN_HEIGHT];
 int savedScreenWidth = SCREEN_WIDTH;
 int savedScreenHeight = SCREEN_HEIGHT;
 
-// === [ ÇÔ¼ö ] ÅØ½ºÆ® ÆÄÀÏ(¾Æ½ºÅ°¾ÆÆ®) ºÒ·¯¿Í¼­ Ãâ·Â ===
+// === [ í•¨ìˆ˜ ] í…ìŠ¤íŠ¸ íŒŒì¼(ì•„ìŠ¤í‚¤ì•„íŠ¸) ë¶ˆëŸ¬ì™€ì„œ ì¶œë ¥ ===
 void print_ascii_file(const char* filename, int start_x, int start_y) {
     FILE* file = fopen(filename, "r");
     if (file != NULL) {
         char buffer[1024];
         int y = start_y;
         while (fgets(buffer, sizeof(buffer), file)) {
-            buffer[strcspn(buffer, "\r\n")] = 0; // ÁÙ¹Ù²Ş ¹®ÀÚ Á¦°Å
+            buffer[strcspn(buffer, "\r\n")] = 0; // ì¤„ë°”ê¿ˆ ë¬¸ì ì œê±°
             move_cursor(start_x, y++);
             printf("%s", buffer);
         }
@@ -127,7 +132,7 @@ void print_ascii_file(const char* filename, int start_x, int start_y) {
     }
     else {
         move_cursor(start_x, start_y);
-        printf("[¿À·ù] '%s' ÆÄÀÏÀ» ºÒ·¯¿Ã ¼ö ¾ø½À´Ï´Ù.\n", filename);
+        printf("[ì˜¤ë¥˜] '%s' íŒŒì¼ì„ ë¶ˆëŸ¬ì˜¬ ìˆ˜ ì—†ìŠµë‹ˆë‹¤.\n", filename);
     }
 }
 
@@ -290,7 +295,7 @@ void ShowLogo(void)
 
     move_cursor(logo_start_x - 5, logo_start_y + logo_height + 2);
     set_color(FONT_COLOR_WHITE);
-    printf(" F11Å°¸¦ ´­·¯ ÀüÃ¼È­¸éÀ¸·Î ¹Ù²Ù°í EnterÅ°¸¦ ´©¸£¸é ½ÃÀÛÇÕ´Ï´Ù.");
+    printf(" F11í‚¤ë¥¼ ëˆŒëŸ¬ ì „ì²´í™”ë©´ìœ¼ë¡œ ë°”ê¾¸ê³  Enterí‚¤ë¥¼ ëˆ„ë¥´ë©´ ì‹œì‘í•©ë‹ˆë‹¤.");
 
     int key;
     do {
@@ -350,7 +355,7 @@ int RenderTitle(void)
     set_color(BG_COLOR_BLACK);
     set_color(FONT_COLOR_GREEN);
     move_cursor(10, 3);
-    printf("È¯¿µÇÕ´Ï´Ù, [%s] ´Ô!", playerName);
+    printf("í™˜ì˜í•©ë‹ˆë‹¤, [%s] ë‹˜!", playerName);
 
     set_color(FONT_COLOR_WHITE);
     int title_start_y = 2;
@@ -367,30 +372,30 @@ int RenderTitle(void)
     int base_x = (SCREEN_WIDTH - max_content_width) / 2 + 6;
 
     move_cursor(base_x + 75, base_y + 14);
-    if (menu == 1) { set_color(FONT_COLOR_YELLOW); printf("¢º 1. ¸¸µç »ç¶÷ ¹× ÆÀ ¼Ò°³"); }
-    else { set_color(FONT_COLOR_WHITE);            printf("   1. ¸¸µç »ç¶÷ ¹× ÆÀ ¼Ò°³"); }
+    if (menu == 1) { set_color(FONT_COLOR_YELLOW); printf("â–¶ 1. ë§Œë“  ì‚¬ëŒ ë° íŒ€ ì†Œê°œ"); }
+    else { set_color(FONT_COLOR_WHITE);            printf("   1. ë§Œë“  ì‚¬ëŒ ë° íŒ€ ì†Œê°œ"); }
 
     move_cursor(base_x + 75, base_y + 16);
-    if (menu == 2) { set_color(FONT_COLOR_YELLOW); printf("¢º 2. ¼³¸í¼­"); }
-    else { set_color(FONT_COLOR_WHITE);            printf("   2. ¼³¸í¼­"); }
+    if (menu == 2) { set_color(FONT_COLOR_YELLOW); printf("â–¶ 2. ì„¤ëª…ì„œ"); }
+    else { set_color(FONT_COLOR_WHITE);            printf("   2. ì„¤ëª…ì„œ"); }
 
     move_cursor(base_x + 75, base_y + 18);
-    if (menu == 3) { set_color(FONT_COLOR_YELLOW); printf("¢º 3. °ÔÀÓ ½ÃÀÛ"); }
-    else { set_color(FONT_COLOR_WHITE);            printf("   3. °ÔÀÓ ½ÃÀÛ"); }
+    if (menu == 3) { set_color(FONT_COLOR_YELLOW); printf("â–¶ 3. ê²Œì„ ì‹œì‘"); }
+    else { set_color(FONT_COLOR_WHITE);            printf("   3. ê²Œì„ ì‹œì‘"); }
 
     move_cursor(base_x + 75, base_y + 20);
-    if (menu == 4) { set_color(FONT_COLOR_YELLOW); printf("¢º 4. °ÔÀÓ Á¾·á"); }
-    else { set_color(FONT_COLOR_WHITE);            printf("   4. °ÔÀÓ Á¾·á"); }
+    if (menu == 4) { set_color(FONT_COLOR_YELLOW); printf("â–¶ 4. ê²Œì„ ì¢…ë£Œ"); }
+    else { set_color(FONT_COLOR_WHITE);            printf("   4. ê²Œì„ ì¢…ë£Œ"); }
 
     set_color(FONT_COLOR_YELLOW);
     int guide_x = console_width - 20;
     int guide_y = console_height - 3;
     if (guide_x < 1) guide_x = 1;
     if (guide_y < 1) guide_y = 1;
-    move_cursor(guide_x, guide_y); printf("¡è: À§·Î ÀÌµ¿");
-    move_cursor(guide_x, guide_y + 1); printf("¡é: ¹ØÀ¸·Î ÀÌµ¿");
-    move_cursor(guide_x, guide_y + 2); printf("Enter : ¼±ÅÃ");
-    move_cursor(guide_x, guide_y + 3); printf("ESC : °ÔÀÓ Á¾·á");
+    move_cursor(guide_x, guide_y); printf("â†‘: ìœ„ë¡œ ì´ë™");
+    move_cursor(guide_x, guide_y + 1); printf("â†“: ë°‘ìœ¼ë¡œ ì´ë™");
+    move_cursor(guide_x, guide_y + 2); printf("Enter : ì„ íƒ");
+    move_cursor(guide_x, guide_y + 3); printf("ESC : ê²Œì„ ì¢…ë£Œ");
 
     move_cursor(1, 1);
 
@@ -440,7 +445,7 @@ void print_member_page(const char* filename, const char* description) {
     }
     else {
         move_cursor(10, 10);
-        printf("[¿À·ù] '%s' ÆÄÀÏÀ» Ã£À» ¼ö ¾ø½À´Ï´Ù.\n", filename);
+        printf("[ì˜¤ë¥˜] '%s' íŒŒì¼ì„ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤.\n", filename);
     }
 
     move_cursor((SCREEN_WIDTH + 38) / 2, 38);
@@ -450,7 +455,7 @@ void print_member_page(const char* filename, const char* description) {
     move_cursor((SCREEN_WIDTH + 38) / 2, 40);
     printf("==================================================");
 
-    const char* nav_str = "[ <- ÀÌÀü ÆäÀÌÁö ]        [ Backspace ¸Ş´º·Î µ¹¾Æ°¡±â ]        [ ´ÙÀ½ ÆäÀÌÁö -> ]";
+    const char* nav_str = "[ <- ì´ì „ í˜ì´ì§€ ]        [ Backspace ë©”ë‰´ë¡œ ëŒì•„ê°€ê¸° ]        [ ë‹¤ìŒ í˜ì´ì§€ -> ]";
     move_cursor((SCREEN_WIDTH + calculate_visual_length(nav_str)) / 3, 42);
     printf("%s", nav_str);
 }
@@ -491,11 +496,11 @@ void draw_final_screen(void) {
     }
 
     const char* team_text[] = {
-        " team 01 (ZERONE) ÆÀ¿øµé",
-        "¸¶ÁØ¼­(202617166) : ÃÑ°ı",
-        "¹éÁ¾È­(202617139) : ÄÚµå",
-        "ÀÌÀÎ¿í(202619389) : ÄÚµå",
-        "ÀÌÁØÇö(202619549) : µğÀÚÀÎ"
+        " team 01 (ZERONE) íŒ€ì›ë“¤",
+        "ë§ˆì¤€ì„œ(202617166) : ì´ê´„",
+        "ë°±ì¢…í™”(202617139) : ì½”ë“œ",
+        "ì´ì¸ìš±(202619389) : ì½”ë“œ",
+        "ì´ì¤€í˜„(202619549) : ë””ìì¸"
     };
 
     int team_start_y = title_start_y + 7;
@@ -505,7 +510,7 @@ void draw_final_screen(void) {
         printf("\x1b[%d;%dH\x1b[30m\x1b[44m%s\x1b[0m", team_start_y + i, team_line_x, team_text[i]);
     }
 
-    const char* final_nav = "[ <- ÀÌÀü ÆäÀÌÁö ]        [ Backspace ¸Ş´º·Î µ¹¾Æ°¡±â ]        [ ESC Á¾·á ]";
+    const char* final_nav = "[ <- ì´ì „ í˜ì´ì§€ ]        [ Backspace ë©”ë‰´ë¡œ ëŒì•„ê°€ê¸° ]        [ ESC ì¢…ë£Œ ]";
     int final_nav_x = (SCREEN_WIDTH - calculate_visual_length(final_nav)) / 2;
     move_cursor(final_nav_x + 45, box_start_y + 9 + box_height + 2);
     set_color(FONT_COLOR_WHITE);
@@ -516,10 +521,10 @@ int People(void)
 {
     const char* filenames[] = { "1.txt", "2.txt", "3.txt", "4.txt" };
     const char* descriptions[] = {
-        "¸¶ÁØ¼­(202617166) : ÃÑ°ı   ",
-        "¹éÁ¾È­(202617139) : ÄÚµå   ",
-        "ÀÌÀÎ¿í(202619389) : ÄÚµå   ",
-        "ÀÌÁØÇö(202619549) : µğÀÚÀÎ  "
+        "ë§ˆì¤€ì„œ(202617166) : ì´ê´„   ",
+        "ë°±ì¢…í™”(202617139) : ì½”ë“œ   ",
+        "ì´ì¸ìš±(202619389) : ì½”ë“œ   ",
+        "ì´ì¤€í˜„(202619549) : ë””ìì¸  "
     };
 
     int current_page = 0;
@@ -595,8 +600,8 @@ int Manual(void)
 
         if (Manual_page == 1)
         {
-            const char* next_msg = "´ÙÀ½Àå (¡æ)";
-            const char* title_msg = "=========== ¼³¸í¼­ ===========";
+            const char* next_msg = "ë‹¤ìŒì¥ (â†’)";
+            const char* title_msg = "=========== ì„¤ëª…ì„œ ===========";
 
             move_cursor(center_x - (calculate_visual_length(next_msg) / 2), nav_y);
             printf("\033[1m%s\033[0m", next_msg);
@@ -609,38 +614,39 @@ int Manual(void)
             set_color(BG_COLOR_BLACK);
 
             set_color(FONT_COLOR_YELLOW);
-            move_cursor(content_x + 38, body_y); printf("°ÔÀÓ Á¦¸ñ : ÀÌ°É Á×³×");
+            move_cursor(content_x + 38, body_y); printf("ê²Œì„ ì œëª© : ì´ê±¸ ì£½ë„¤");
 
             set_color(FONT_COLOR_RED); move_cursor(content_x + 20, body_y + 3); printf("HP");
-            set_color(FONT_COLOR_WHITE); printf("°¡ 0 ÀÌÇÏ°¡ µÇ±â Àü±îÁö ÃÖ´ëÇÑ ¸¹Àº ÅÏÀ» ¹öÆ¼´Â °ÔÀÓÀÔ´Ï´Ù.");
+            set_color(FONT_COLOR_WHITE); printf("ê°€ 0 ì´í•˜ê°€ ë˜ê¸° ì „ê¹Œì§€ ìµœëŒ€í•œ ë§ì€ í„´ì„ ë²„í‹°ëŠ” ê²Œì„ì…ë‹ˆë‹¤.");
 
-            move_cursor(content_x + 30, body_y + 5); printf("¸Å ÅÏ¸¶´Ù 2°³ ¶Ç´Â 3°³ÀÇ ¼±ÅÃÁö°¡ ³ª¿É´Ï´Ù.");
-            move_cursor(content_x + 32, body_y + 6); printf("¼±ÅÃÁö ¾ÈÀÇ ¼ıÀÚ´Â ¹«ÀÛÀ§·Î Á¤ÇØÁı´Ï´Ù.");
-            move_cursor(content_x + 30, body_y + 7); printf("¼±ÅÃÇÑ Çàµ¿¿¡ µû¶ó ");
+            move_cursor(content_x + 30, body_y + 5); printf("ë§¤ í„´ë§ˆë‹¤ 2ê°œ ë˜ëŠ” 3ê°œì˜ ì„ íƒì§€ê°€ ë‚˜ì˜µë‹ˆë‹¤.");
+            move_cursor(content_x + 32, body_y + 6); printf("ì„ íƒì§€ ì•ˆì˜ ìˆ«ìëŠ” ë¬´ì‘ìœ„ë¡œ ì •í•´ì§‘ë‹ˆë‹¤.");
+            move_cursor(content_x + 32, body_y + 7); printf("4ì´ˆ ì•ˆì— ì„ íƒí•˜ì§€ ì•Šì„ ì‹œ ìë™ ì„ íƒ ë©ë‹ˆë‹¤.");
+            move_cursor(content_x + 30, body_y + 8); printf("ì„ íƒí•œ í–‰ë™ì— ë”°ë¼ ");
 
-            set_color(FONT_COLOR_RED); printf("HP"); set_color(FONT_COLOR_WHITE); printf("°¡ ´Ù¸£°Ô °¨¼ÒÇÕ´Ï´Ù.");
+            set_color(FONT_COLOR_RED); printf("HP"); set_color(FONT_COLOR_WHITE); printf("ê°€ ë‹¤ë¥´ê²Œ ê°ì†Œí•©ë‹ˆë‹¤.");
 
-            set_color(FONT_COLOR_YELLOW); move_cursor(content_x + 32, body_y + 10); printf("Backspace");
-            set_color(FONT_COLOR_WHITE); printf("¸¦ ´­·¯ ¸Ş´º·Î µ¹¾Æ°¡½Ã¿À");
+            set_color(FONT_COLOR_YELLOW); move_cursor(content_x + 32, body_y + 11); printf("Backspace");
+            set_color(FONT_COLOR_WHITE); printf("ë¥¼ ëˆŒëŸ¬ ë©”ë‰´ë¡œ ëŒì•„ê°€ì‹œì˜¤");
         }
 
         if (Manual_page == 2)
         {
-            const char* prev_msg = "ÀÌÀüÀå (¡ç)";
-            const char* exit_msg = "³ª°¡±â (Backspace)";
-            const char* title_msg = "Å° ¼³¸í";
+            const char* prev_msg = "ì´ì „ì¥ (â†)";
+            const char* exit_msg = "ë‚˜ê°€ê¸° (Backspace)";
+            const char* title_msg = "í‚¤ ì„¤ëª…";
 
             move_cursor(center_x - 45, nav_y); printf("\033[1m%s\033[0m", prev_msg);
             move_cursor(center_x + 25, nav_y); printf("\033[1m%s\033[0m", exit_msg);
 
             move_cursor(center_x - (calculate_visual_length(title_msg) / 2), title_y); printf("\033[1m%s\033[0m", title_msg);
-            move_cursor(content_x + 43, body_y + 1);  printf("¡è: À§·Î ÀÌµ¿");
-            move_cursor(content_x + 43, body_y + 2); printf("¡é: ¹ØÀ¸·Î ÀÌµ¿");
-            move_cursor(content_x + 43, body_y + 3); printf("¡ç: ¿ŞÂÊ ¼±ÅÃ");
-            move_cursor(content_x + 43, body_y + 4); printf("¡æ: ¿À¸¥ÂÊ ¼±ÅÃ");
-            move_cursor(content_x + 43, body_y + 5); printf("Enter : ¼±ÅÃ");
-            move_cursor(content_x + 43, body_y + 6); printf("ESC : °ÔÀÓ Á¾·á");
-            move_cursor(content_x + 40, body_y + 7); printf("Backspace : µÚ·Î °¡±â");
+            move_cursor(content_x + 43, body_y + 1);  printf("â†‘: ìœ„ë¡œ ì´ë™");
+            move_cursor(content_x + 43, body_y + 2); printf("â†“: ë°‘ìœ¼ë¡œ ì´ë™");
+            move_cursor(content_x + 43, body_y + 3); printf("â†: ì™¼ìª½ ì„ íƒ");
+            move_cursor(content_x + 43, body_y + 4); printf("â†’: ì˜¤ë¥¸ìª½ ì„ íƒ");
+            move_cursor(content_x + 43, body_y + 5); printf("Enter : ì„ íƒ");
+            move_cursor(content_x + 43, body_y + 6); printf("ESC : ê²Œì„ ì¢…ë£Œ");
+            move_cursor(content_x + 40, body_y + 7); printf("Backspace : ë’¤ë¡œ ê°€ê¸°");
         }
 
         key = _getch();
@@ -710,7 +716,7 @@ int Gamestart(void)
             printf("%s", intro_lines[i]);
         }
 
-        const char* start_msg = "¾Æ¹« Å°³ª ´©¸£¸é °ÔÀÓÀÌ ½ÃÀÛµË´Ï´Ù...";
+        const char* start_msg = "ì•„ë¬´ í‚¤ë‚˜ ëˆ„ë¥´ë©´ ê²Œì„ì´ ì‹œì‘ë©ë‹ˆë‹¤...";
         int start_msg_x = (intro_width - calculate_visual_length(start_msg)) / 2;
         if (start_msg_x < 1) start_msg_x = 1;
 
@@ -719,13 +725,13 @@ int Gamestart(void)
         _getch();
     }
     else {
-        const char* error_msg = "¿À·ù: ta.txt ÆÄÀÏÀ» Ã£À» ¼ö ¾ø½À´Ï´Ù.";
+        const char* error_msg = "ì˜¤ë¥˜: ta.txt íŒŒì¼ì„ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤.";
         int error_x = (intro_width - calculate_visual_length(error_msg)) / 2;
         if (error_x < 1) error_x = 1;
         move_cursor(error_x, intro_height / 2); printf("%s\n", error_msg); Sleep(2000);
     }
 
-    int random_bgm = rand() % 3; // 0 ¶Ç´Â 1 »ı¼º
+    int random_bgm = rand() % 3; // 0 ë˜ëŠ” 1 ìƒì„±
     if (random_bgm == 0) {
         PlaySound(TEXT("White Hats - Wayne Jones_[cut_99sec].wav"), NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
     }
@@ -837,7 +843,7 @@ int Gamestart(void)
         }
         move_cursor(right_x, msg_y); printf("%s", right_msg);
 
-        const char* help_msg = "¹æÇâÅ°(¡ç, ¡æ)·Î ¼±ÅÃÇÏ¼¼¿ä. (¸Ş´º·Î °¡±â: Backspace)";
+        const char* help_msg = "ë°©í–¥í‚¤(â†, â†’)ë¡œ ì„ íƒí•˜ì„¸ìš”. (ë©”ë‰´ë¡œ ê°€ê¸°: Backspace)";
         int help_msg_len = calculate_visual_length(help_msg);
         int help_x = center_x - (help_msg_len / 2) + 6;
         set_color(FONT_COLOR_GREEN); move_cursor(help_x, help_y); printf("%s", help_msg);
@@ -855,7 +861,7 @@ int Gamestart(void)
         int auto_selected_idx = (left_auto_damage >= right_auto_damage) ? left_idx : right_idx;
         int has_selected = 0;
         int selected_idx = 0;
-        int timeout_seconds = 2;
+        int timeout_seconds = 4;
         int last_remaining = -1;
         int timer_x = hud_x + player_hud_len + hud_gap + hp_hud_len + hud_gap + score_hud_len + 12;
         DWORD start_tick = GetTickCount();
@@ -921,8 +927,8 @@ int Gamestart(void)
                     int confirm_y = console_height / 2;
                     if (confirm_y < 4) confirm_y = 4;
 
-                    set_color(FONT_COLOR_RED); move_cursor(center_x - 12, confirm_y); printf("°ÔÀÓÀ» ÁßÁöÇÏ½Ã°Ú½À´Ï±î?");
-                    move_cursor(center_x - 22, confirm_y + 3); printf("°ÔÀÓÀ» °è¼ÓÇÏ·Á¸é t, ÁßÁöÇÏ·Á¸é r¸¦ ´©¸£½Ã¿À.");
+                    set_color(FONT_COLOR_RED); move_cursor(center_x - 12, confirm_y); printf("ê²Œì„ì„ ì¤‘ì§€í•˜ì‹œê² ìŠµë‹ˆê¹Œ?");
+                    move_cursor(center_x - 22, confirm_y + 3); printf("ê²Œì„ì„ ê³„ì†í•˜ë ¤ë©´ t, ì¤‘ì§€í•˜ë ¤ë©´ rë¥¼ ëˆ„ë¥´ì‹œì˜¤.");
 
                     key = _getch();
 
@@ -947,12 +953,12 @@ int Gamestart(void)
         }
         int damage = 0;
 
-        if (strstr(choices[selected_idx].text, "Ãş¿¡¼­ ¶³¾îÁ³´Ù") != NULL)
+        if (strstr(choices[selected_idx].text, "ì¸µì—ì„œ ë–¨ì–´ì¡Œë‹¤") != NULL)
         {
             int n = (selected_idx == left_idx) ? left_n : right_n;
             damage = n * 4;
         }
-        else if (strstr(choices[selected_idx].text, "¼Óµµ") != NULL)
+        else if (strstr(choices[selected_idx].text, "ì†ë„") != NULL)
         {
             int n = (selected_idx == left_idx) ? left_n : right_n;
             damage = n * 2;
@@ -964,31 +970,31 @@ int Gamestart(void)
         }
 
         // ==========================================
-        // [ ½Å±Ô ÄÚµå ] °í¾çÀÌ ÂüÂüÂü ¹Ì´Ï°ÔÀÓ ½ÃÀÛ
+        // [ ì‹ ê·œ ì½”ë“œ ] ê³ ì–‘ì´ ì°¸ì°¸ì°¸ ë¯¸ë‹ˆê²Œì„ ì‹œì‘
         // ==========================================
-        if (strstr(choices[selected_idx].text, "±Í¿©¿î ±æ°í¾çÀÌ¸¦ ¾²´Ùµë´Â´Ù.") != NULL)
+        if (strstr(choices[selected_idx].text, "ê·€ì—¬ìš´ ê¸¸ê³ ì–‘ì´ë¥¼ ì“°ë‹¤ë“¬ëŠ”ë‹¤.") != NULL)
         {
             PlaySound(TEXT("Misirlou Pulp Fiction Theme_[cut_134sec].wav"), NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
 
-            // ÀüÃ¼È­¸é(F11) ·¹ÀÌ¾Æ¿ôÀÌ ±úÁöÁö ¾Êµµ·Ï ÄÜ¼Ö ¹öÆÛ¸¦ ¸Å¿ì ³Ğ°Ô(200Ä­) È®ÀåÇÕ´Ï´Ù.
+            // ì „ì²´í™”ë©´(F11) ë ˆì´ì•„ì›ƒì´ ê¹¨ì§€ì§€ ì•Šë„ë¡ ì½˜ì†” ë²„í¼ë¥¼ ë§¤ìš° ë„“ê²Œ(200ì¹¸) í™•ì¥í•©ë‹ˆë‹¤.
             system("mode con cols=200 lines=70");
             system("cls");
 
-            // °ÔÀÓÀÇ Áß¾Ó ÁÂÇ¥¸¦ ´õ ÆÄ°İÀûÀ¸·Î ¿ìÃø(110)À¸·Î Àâ¾Ò½À´Ï´Ù.
+            // ê²Œì„ì˜ ì¤‘ì•™ ì¢Œí‘œë¥¼ ë” íŒŒê²©ì ìœ¼ë¡œ ìš°ì¸¡(110)ìœ¼ë¡œ ì¡ì•˜ìŠµë‹ˆë‹¤.
             int mini_center = 110;
 
-            // 1. °í¾çÀÌ Áß¾Ó Ãâ·Â (110 ±âÁØÀ¸·Î ¾à 29Ä­ ÁÂÃøÀ¸·Î ´ç°Ü¾ß µü Áß¾Ó Á¤·ÄµÊ)
+            // 1. ê³ ì–‘ì´ ì¤‘ì•™ ì¶œë ¥ (110 ê¸°ì¤€ìœ¼ë¡œ ì•½ 29ì¹¸ ì¢Œì¸¡ìœ¼ë¡œ ë‹¹ê²¨ì•¼ ë”± ì¤‘ì•™ ì •ë ¬ë¨)
             print_ascii_file("ascii-art (5).txt", mini_center - 29, 2);
 
-            // 2. ±âº» ¼Õ ¸ğ¾ç Áß¾Ó Ãâ·Â (¸¶Âù°¡Áö·Î ¾Æ½ºÅ°¾ÆÆ® ±æÀÌ º¸Á¤)
+            // 2. ê¸°ë³¸ ì† ëª¨ì–‘ ì¤‘ì•™ ì¶œë ¥ (ë§ˆì°¬ê°€ì§€ë¡œ ì•„ìŠ¤í‚¤ì•„íŠ¸ ê¸¸ì´ ë³´ì •)
             print_ascii_file("ascii-art (6).txt", mini_center - 29, 30);
 
             int player_dir = 0;
             set_color(FONT_COLOR_WHITE);
 
-            // ¾È³» ¹®±¸¸¦ Áß¾Ó¿¡ ¹èÄ¡
+            // ì•ˆë‚´ ë¬¸êµ¬ë¥¼ ì¤‘ì•™ì— ë°°ì¹˜
             int status_y = 29;
-            const char* prompt_msg = "°í¾çÀÌ¿Í ÂüÂüÂü! ¹æÇâÅ°¸¦ ¼±ÅÃÇÏ¼¼¿ä (¿ŞÂÊ: <-, À§ÂÊ: À§ÂÊ¹æÇâÅ°, ¿À¸¥ÂÊ: ->) : ";
+            const char* prompt_msg = "ê³ ì–‘ì´ì™€ ì°¸ì°¸ì°¸! ë°©í–¥í‚¤ë¥¼ ì„ íƒí•˜ì„¸ìš” (ì™¼ìª½: <-, ìœ„ìª½: ìœ„ìª½ë°©í–¥í‚¤, ì˜¤ë¥¸ìª½: ->) : ";
             int p_len = calculate_visual_length(prompt_msg);
             move_cursor(mini_center - 70, status_y); printf("%140s", "");
             move_cursor(mini_center - (p_len / 2), status_y);
@@ -1019,7 +1025,7 @@ int Gamestart(void)
                     }
                 }
 
-                const char* error_msg = "Àß¸øµÈ ÀÔ·ÂÀÔ´Ï´Ù. ¿ŞÂÊ/À§ÂÊ/¿À¸¥ÂÊ ¹æÇâÅ°¸¦ ´­·¯ÁÖ¼¼¿ä.";
+                const char* error_msg = "ì˜ëª»ëœ ì…ë ¥ì…ë‹ˆë‹¤. ì™¼ìª½/ìœ„ìª½/ì˜¤ë¥¸ìª½ ë°©í–¥í‚¤ë¥¼ ëˆŒëŸ¬ì£¼ì„¸ìš”.";
                 int err_len = calculate_visual_length(error_msg);
                 move_cursor(mini_center - 70, status_y); printf("%140s", "");
                 move_cursor(mini_center - (err_len / 2), status_y);
@@ -1028,7 +1034,7 @@ int Gamestart(void)
                 set_color(FONT_COLOR_WHITE);
             }
 
-            const char* wait_msg = "3ÃÊ µÚ °á°ú°¡ °ø°³µË´Ï´Ù...";
+            const char* wait_msg = "3ì´ˆ ë’¤ ê²°ê³¼ê°€ ê³µê°œë©ë‹ˆë‹¤...";
             int w_len = calculate_visual_length(wait_msg);
             move_cursor(mini_center - 70, status_y); printf("%140s", "");
             move_cursor(mini_center - (w_len / 2), status_y);
@@ -1038,36 +1044,36 @@ int Gamestart(void)
 
             system("cls");
 
-            // °í¾çÀÌ ¹æÇâ ³­¼ö »ı¼º (1: ¿À¸¥ÂÊ, 2: Áß¾Ó, 3: ¿ŞÂÊ)
+            // ê³ ì–‘ì´ ë°©í–¥ ë‚œìˆ˜ ìƒì„± (1: ì˜¤ë¥¸ìª½, 2: ì¤‘ì•™, 3: ì™¼ìª½)
             int cat_dir = (rand() % 3) + 1;
 
-            // °í¾çÀÌ ¹æÇâ¿¡ ¸ÂÃç ÆÄ°İÀûÀ¸·Î XÁÂÇ¥ ÀÌµ¿
-            int cat_x = mini_center - 29; // Áß¾Ó °íÁ¤Á¡
-            if (cat_dir == 1) cat_x = mini_center + 15; // ¿À¸¥ÂÊÀ¸·Î È® ÀÌµ¿
-            else if (cat_dir == 3) cat_x = mini_center - 75; // ¿ŞÂÊÀ¸·Î È® ÀÌµ¿
+            // ê³ ì–‘ì´ ë°©í–¥ì— ë§ì¶° íŒŒê²©ì ìœ¼ë¡œ Xì¢Œí‘œ ì´ë™
+            int cat_x = mini_center - 29; // ì¤‘ì•™ ê³ ì •ì 
+            if (cat_dir == 1) cat_x = mini_center + 15; // ì˜¤ë¥¸ìª½ìœ¼ë¡œ í™• ì´ë™
+            else if (cat_dir == 3) cat_x = mini_center - 75; // ì™¼ìª½ìœ¼ë¡œ í™• ì´ë™
 
-            // °á°ú È­¸é - °í¾çÀÌ°¡ ¼±ÅÃÇÑ ¹æÇâÀ¸·Î È× ÀÌµ¿ÇÏ¿© Ãâ·ÂµÊ
+            // ê²°ê³¼ í™”ë©´ - ê³ ì–‘ì´ê°€ ì„ íƒí•œ ë°©í–¥ìœ¼ë¡œ íœ™ ì´ë™í•˜ì—¬ ì¶œë ¥ë¨
             print_ascii_file("ascii-art (5).txt", cat_x, 2);
 
             set_color(FONT_COLOR_BRIGHTMAGENTA);
             move_cursor(mini_center - 10, 28);
-            if (cat_dir == 1) printf("°í¾çÀÌ: (¿À¸¥ÂÊ È×!) =>");
-            else if (cat_dir == 2) printf("°í¾çÀÌ: (°¡¸¸È÷ Áß¾Ó)");
-            else printf("°í¾çÀÌ: <= (¿ŞÂÊ È×!)");
+            if (cat_dir == 1) printf("ê³ ì–‘ì´: (ì˜¤ë¥¸ìª½ íœ™!) =>");
+            else if (cat_dir == 2) printf("ê³ ì–‘ì´: (ê°€ë§Œíˆ ì¤‘ì•™)");
+            else printf("ê³ ì–‘ì´: <= (ì™¼ìª½ íœ™!)");
 
-            // ÇÃ·¹ÀÌ¾î ¼±ÅÃ ¼Õ ¸ğ¾ç Áß¾Ó Ãâ·Â
-            if (player_dir == 1) print_ascii_file("ascii-art (8).txt", mini_center - 29, 30);      // ¿À¸¥ÂÊ ¼Õ
-            else if (player_dir == 2) print_ascii_file("ascii-art (6).txt", mini_center - 29, 30); // Áß¾Ó ¼Õ
-            else if (player_dir == 3) print_ascii_file("ascii-art (7).txt", mini_center - 29, 30); // ¿ŞÂÊ ¼Õ
+            // í”Œë ˆì´ì–´ ì„ íƒ ì† ëª¨ì–‘ ì¤‘ì•™ ì¶œë ¥
+            if (player_dir == 1) print_ascii_file("ascii-art (8).txt", mini_center - 29, 30);      // ì˜¤ë¥¸ìª½ ì†
+            else if (player_dir == 2) print_ascii_file("ascii-art (6).txt", mini_center - 29, 30); // ì¤‘ì•™ ì†
+            else if (player_dir == 3) print_ascii_file("ascii-art (7).txt", mini_center - 29, 30); // ì™¼ìª½ ì†
 
             set_color(FONT_COLOR_WHITE);
 
-            // ½ÂÆĞ ÆÇÁ¤ ·ÎÁ÷
+            // ìŠ¹íŒ¨ íŒì • ë¡œì§
             if (player_dir == cat_dir)
             {
-                // [¼öÁ¤] ¼º°ø ½Ã ±âÁ¸ ºê±İÀ» ¸ØÃß°í cat.wav(°í¾çÀÌ ¼Ò¸®) Àç»ı
+                // [ìˆ˜ì •] ì„±ê³µ ì‹œ ê¸°ì¡´ ë¸Œê¸ˆì„ ë©ˆì¶”ê³  cat.wav(ê³ ì–‘ì´ ì†Œë¦¬) ì¬ìƒ
                 PlaySound(TEXT("cat.wav"), NULL, SND_FILENAME | SND_ASYNC);
-                const char* win_msg = "ÂüÂüÂü ¼º°ø! °í¾çÀÌ°¡ ±âºĞ ÁÁ°Ô ±×¸£¸ª °Å¸³´Ï´Ù. (HP 15 È¸º¹)";
+                const char* win_msg = "ì°¸ì°¸ì°¸ ì„±ê³µ! ê³ ì–‘ì´ê°€ ê¸°ë¶„ ì¢‹ê²Œ ê·¸ë¥´ë¦‰ ê±°ë¦½ë‹ˆë‹¤. (HP 15 íšŒë³µ)";
                 int msg_len = calculate_visual_length(win_msg);
                 move_cursor(mini_center - (msg_len / 2), 29);
                 set_color(FONT_COLOR_GREEN);
@@ -1076,11 +1082,11 @@ int Gamestart(void)
             }
             else
             {
-                // ½ÇÆĞ ½Ã ÇÏ¾ÇÁú ¼Ò¸® Àç»ı 
+                // ì‹¤íŒ¨ ì‹œ í•˜ì•…ì§ˆ ì†Œë¦¬ ì¬ìƒ 
                 PlaySound(TEXT("angry_cat.wav"), NULL, SND_FILENAME | SND_ASYNC);
                 int cat_damage = (rand() % 11) + 10;
                 char lose_msg[128];
-                sprintf(lose_msg, "ÂüÂüÂü ½ÇÆĞ! °í¾çÀÌ°¡ ÇÏ¾ÇÁúÀ» ÇÏ¸ç ÇÒÅ¢´Ï´Ù. (HP %d °¨¼Ò)", cat_damage);
+                sprintf(lose_msg, "ì°¸ì°¸ì°¸ ì‹¤íŒ¨! ê³ ì–‘ì´ê°€ í•˜ì•…ì§ˆì„ í•˜ë©° í• í…ë‹ˆë‹¤. (HP %d ê°ì†Œ)", cat_damage);
                 int msg_len = calculate_visual_length(lose_msg);
                 move_cursor(mini_center - (msg_len / 2), 29);
                 set_color(FONT_COLOR_RED);
@@ -1089,7 +1095,7 @@ int Gamestart(void)
             }
 
             Sleep(3000);
-            system("mode con cols=120 lines=30"); // ¿ø·¡ Ã¢ Å©±â·Î º¹±¸
+            system("mode con cols=120 lines=30"); // ì›ë˜ ì°½ í¬ê¸°ë¡œ ë³µêµ¬
             system("cls");
 
             if (random_bgm == 0) {
@@ -1110,13 +1116,13 @@ int Gamestart(void)
             hp = 100;
         }
 
-        if (strstr(choices[selected_idx].text, "¼ö»óÇÒ Á¤µµ·Î »¡°£ ¹öÆ°À» ´©¸¥´Ù.") != NULL)
+        if (strstr(choices[selected_idx].text, "ìˆ˜ìƒí•  ì •ë„ë¡œ ë¹¨ê°„ ë²„íŠ¼ì„ ëˆ„ë¥¸ë‹¤.") != NULL)
         {
-            // È¿°úÀ½ Àç»ı
+            // íš¨ê³¼ìŒ ì¬ìƒ
             PlaySound(TEXT("boom.wav"), NULL, SND_FILENAME | SND_ASYNC);
-             // È¿°úÀ½ÀÌ ´ë·« 2ÃÊ¶ó°í °¡Á¤
-            // ´Ù½Ã BGM ·çÇÁ Àç»ı
-            // (ÇöÀç Àç»ı ÁßÀÌ´ø BGM ÆÄÀÏ¸íÀ» ´Ù½Ã ³Ö¾îÁİ´Ï´Ù)
+             // íš¨ê³¼ìŒì´ ëŒ€ëµ 2ì´ˆë¼ê³  ê°€ì •
+            // ë‹¤ì‹œ BGM ë£¨í”„ ì¬ìƒ
+            // (í˜„ì¬ ì¬ìƒ ì¤‘ì´ë˜ BGM íŒŒì¼ëª…ì„ ë‹¤ì‹œ ë„£ì–´ì¤ë‹ˆë‹¤)
             if (random_bgm == 0) 
             {
                 Sleep(1900);
@@ -1129,12 +1135,12 @@ int Gamestart(void)
 
         }
 
-        if (strstr(choices[selected_idx].text, "ÅÂ¾çÀ» ¸Ç´«À¸·Î 10ÃÊ µ¿¾È ¹Ù¶óº»´Ù.") != NULL)
+        if (strstr(choices[selected_idx].text, "íƒœì–‘ì„ ë§¨ëˆˆìœ¼ë¡œ 10ì´ˆ ë™ì•ˆ ë°”ë¼ë³¸ë‹¤.") != NULL)
         {
             PlaySound(TEXT("myeye!.wav"), NULL, SND_FILENAME | SND_ASYNC);
             
-            // ´Ù½Ã BGM ·çÇÁ Àç»ı
-            // (ÇöÀç Àç»ı ÁßÀÌ´ø BGM ÆÄÀÏ¸íÀ» ´Ù½Ã ³Ö¾îÁİ´Ï´Ù)
+            // ë‹¤ì‹œ BGM ë£¨í”„ ì¬ìƒ
+            // (í˜„ì¬ ì¬ìƒ ì¤‘ì´ë˜ BGM íŒŒì¼ëª…ì„ ë‹¤ì‹œ ë„£ì–´ì¤ë‹ˆë‹¤)
             if (random_bgm == 0) {
                 Sleep(1900);
                 PlaySound(TEXT("White Hats - Wayne Jones_[cut_99sec].wav"), NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
@@ -1145,13 +1151,13 @@ int Gamestart(void)
             }
         }
 
-        if (strstr(choices[selected_idx].text, "%dÀÇ ¼Óµµ·Î ´Ş¸®´Â Â÷¿¡ Ä¡ÀÎ´Ù.") != NULL)
+        if (strstr(choices[selected_idx].text, "%dì˜ ì†ë„ë¡œ ë‹¬ë¦¬ëŠ” ì°¨ì— ì¹˜ì¸ë‹¤.") != NULL)
         {
-            // È¿°úÀ½ Àç»ı
+            // íš¨ê³¼ìŒ ì¬ìƒ
             PlaySound(TEXT("car.wav"), NULL, SND_FILENAME | SND_ASYNC);
-            // È¿°úÀ½ÀÌ ´ë·« 2ÃÊ¶ó°í °¡Á¤
-           // ´Ù½Ã BGM ·çÇÁ Àç»ı
-           // (ÇöÀç Àç»ı ÁßÀÌ´ø BGM ÆÄÀÏ¸íÀ» ´Ù½Ã ³Ö¾îÁİ´Ï´Ù)
+            // íš¨ê³¼ìŒì´ ëŒ€ëµ 2ì´ˆë¼ê³  ê°€ì •
+           // ë‹¤ì‹œ BGM ë£¨í”„ ì¬ìƒ
+           // (í˜„ì¬ ì¬ìƒ ì¤‘ì´ë˜ BGM íŒŒì¼ëª…ì„ ë‹¤ì‹œ ë„£ì–´ì¤ë‹ˆë‹¤)
             if (random_bgm == 0)
             {
                 Sleep(4000);
@@ -1164,13 +1170,13 @@ int Gamestart(void)
 
         }
 
-        if (strstr(choices[selected_idx].text, "ÀÚÆÇ±â¿¡¼­ »ÌÀº Á¦·Î ½´°Å Äİ¶ó¸¦ ½Ã¿øÇÏ°Ô µéÀÌÅ²´Ù.") != NULL)
+        if (strstr(choices[selected_idx].text, "ìíŒê¸°ì—ì„œ ë½‘ì€ ì œë¡œ ìŠˆê±° ì½œë¼ë¥¼ ì‹œì›í•˜ê²Œ ë“¤ì´í‚¨ë‹¤.") != NULL)
         {
-            // È¿°úÀ½ Àç»ı
+            // íš¨ê³¼ìŒ ì¬ìƒ
             PlaySound(TEXT("Drinking.wav"), NULL, SND_FILENAME | SND_ASYNC);
-            // È¿°úÀ½ÀÌ ´ë·« 2ÃÊ¶ó°í °¡Á¤
-           // ´Ù½Ã BGM ·çÇÁ Àç»ı
-           // (ÇöÀç Àç»ı ÁßÀÌ´ø BGM ÆÄÀÏ¸íÀ» ´Ù½Ã ³Ö¾îÁİ´Ï´Ù)
+            // íš¨ê³¼ìŒì´ ëŒ€ëµ 2ì´ˆë¼ê³  ê°€ì •
+           // ë‹¤ì‹œ BGM ë£¨í”„ ì¬ìƒ
+           // (í˜„ì¬ ì¬ìƒ ì¤‘ì´ë˜ BGM íŒŒì¼ëª…ì„ ë‹¤ì‹œ ë„£ì–´ì¤ë‹ˆë‹¤)
             if (random_bgm == 0)
             {
                 Sleep(3000);
@@ -1183,13 +1189,13 @@ int Gamestart(void)
 
         }
 
-        if (strstr(choices[selected_idx].text, "ÆíÀÇÁ¡¿¡¼­ ÀÌ¿ÂÀ½·á¸¦ ¸¶½Å´Ù.") != NULL)
+        if (strstr(choices[selected_idx].text, "í¸ì˜ì ì—ì„œ ì´ì˜¨ìŒë£Œë¥¼ ë§ˆì‹ ë‹¤.") != NULL)
         {
-            // È¿°úÀ½ Àç»ı
+            // íš¨ê³¼ìŒ ì¬ìƒ
             PlaySound(TEXT("Drinking.wav"), NULL, SND_FILENAME | SND_ASYNC);
-            // È¿°úÀ½ÀÌ ´ë·« 2ÃÊ¶ó°í °¡Á¤
-           // ´Ù½Ã BGM ·çÇÁ Àç»ı
-           // (ÇöÀç Àç»ı ÁßÀÌ´ø BGM ÆÄÀÏ¸íÀ» ´Ù½Ã ³Ö¾îÁİ´Ï´Ù)
+            // íš¨ê³¼ìŒì´ ëŒ€ëµ 2ì´ˆë¼ê³  ê°€ì •
+           // ë‹¤ì‹œ BGM ë£¨í”„ ì¬ìƒ
+           // (í˜„ì¬ ì¬ìƒ ì¤‘ì´ë˜ BGM íŒŒì¼ëª…ì„ ë‹¤ì‹œ ë„£ì–´ì¤ë‹ˆë‹¤)
             if (random_bgm == 0)
             {
                 Sleep(3000);
@@ -1212,11 +1218,11 @@ int Gamestart(void)
         char result_msg[128];
         if (damage < 0)
         {
-            sprintf(result_msg, "¼±ÅÃ ¿Ï·á! HP°¡ %d È¸º¹µÇ¾ú½À´Ï´Ù.", -damage);
+            sprintf(result_msg, "ì„ íƒ ì™„ë£Œ! HPê°€ %d íšŒë³µë˜ì—ˆìŠµë‹ˆë‹¤.", -damage);
         }
         else
         {
-            sprintf(result_msg, "¼±ÅÃ ¿Ï·á! HP°¡ %d °¨¼ÒÇß½À´Ï´Ù.", damage);
+            sprintf(result_msg, "ì„ íƒ ì™„ë£Œ! HPê°€ %d ê°ì†Œí–ˆìŠµë‹ˆë‹¤.", damage);
         }
 
         int res_len = calculate_visual_length(result_msg);
@@ -1238,8 +1244,8 @@ int Gamestart(void)
     system("cls");
     set_color(FONT_COLOR_RED); move_cursor(95, 12); printf("GAME OVER");
 
-    set_color(FONT_COLOR_WHITE); move_cursor(90, 14); printf("ÃÖÁ¾ ¹öÆ¾ Á¡¼ö : %d", score);
-    move_cursor(83, 18); printf("Backspace¸¦ ´©¸£¸é ¸Ş´º·Î µ¹¾Æ°©´Ï´Ù.");
+    set_color(FONT_COLOR_WHITE); move_cursor(90, 14); printf("ìµœì¢… ë²„í‹´ ì ìˆ˜ : %d", score);
+    move_cursor(83, 18); printf("Backspaceë¥¼ ëˆ„ë¥´ë©´ ë©”ë‰´ë¡œ ëŒì•„ê°‘ë‹ˆë‹¤.");
 
     while (1)
     {
@@ -1261,26 +1267,26 @@ int Gameover(void)
         "              GAME OVER               ",
         "======================================",
         "",
-        "       ÇÃ·¹ÀÌ ÇØÁÖ¼Å¼­ °¨»çÇÕ´Ï´Ù!     ",
+        "       í”Œë ˆì´ í•´ì£¼ì…”ì„œ ê°ì‚¬í•©ë‹ˆë‹¤!     ",
         "",
         "--------------------------------------",
         "          [ PLAYER SCORE ]            ",
         "",
-        "       ÇÃ·¹ÀÌ¾î: %s",
-        "       ÃÖÁ¾ Á¡¼ö: %d Á¡",
+        "       í”Œë ˆì´ì–´: %s",
+        "       ìµœì¢… ì ìˆ˜: %d ì ",
         "--------------------------------------",
         "",
         "           [ DEVELOPERS ]             ",
         "",
-        "        team 01 (ZERONE) ÆÀ¿øµé       ",
+        "        team 01 (ZERONE) íŒ€ì›ë“¤       ",
         "",
-        "        ¸¶ÁØ¼­ (202617166) : ÃÑ°ı     ",
-        "        ¹éÁ¾È­ (202617139) : ÄÚµå     ",
-        "        ÀÌÀÎ¿í (202619389) : ÄÚµå     ",
-        "        ÀÌÁØÇö (202619549) : µğÀÚÀÎ   ",
+        "        ë§ˆì¤€ì„œ (202617166) : ì´ê´„     ",
+        "        ë°±ì¢…í™” (202617139) : ì½”ë“œ     ",
+        "        ì´ì¸ìš± (202619389) : ì½”ë“œ     ",
+        "        ì´ì¤€í˜„ (202619549) : ë””ìì¸   ",
         "",
         "======================================",
-        "      Àá½Ã ÈÄ °ÔÀÓÀÌ Á¾·áµË´Ï´Ù.      ",
+        "      ì ì‹œ í›„ ê²Œì„ì´ ì¢…ë£Œë©ë‹ˆë‹¤.      ",
         "====================================--"
         "",
         "",
@@ -1384,7 +1390,7 @@ int main(void)
 
     set_color(FONT_COLOR_WHITE);
     move_cursor(80, 26);
-    printf("ÇÃ·¹ÀÌ¾îÀÇ ´Ğ³×ÀÓÀ» ÀÔ·ÂÇÏ¼¼¿ä: ");
+    printf("í”Œë ˆì´ì–´ì˜ ë‹‰ë„¤ì„ì„ ì…ë ¥í•˜ì„¸ìš”: ");
     set_color(FONT_COLOR_YELLOW);
     scanf("%49s", playerName);
 
