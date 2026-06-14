@@ -34,7 +34,7 @@
 #define Backspace 8 // 키보드의 백스페이스 키가 가지는 고유 아스키코드 번호(8)를 알아보기 쉽게 이름을 붙인 것입니다.
 
 #define SCREEN_WIDTH 120  // 이 프로그램이 사용하는 가상 콘솔 화면의 최대 가로 칸(폭)을 120칸으로 정합니다.
-#define SCREEN_HEIGHT 50  // 거대 아트를 담기 위해 세로 화면을 50줄로 대폭 확장합니다.
+#define SCREEN_HEIGHT 30  // 이 프로그램이 사용하는 가상 콘솔 화면의 최대 세로 줄(높이)을 30줄로 정합니다.
 
 // 프로그램 안에서 사용할 기능(함수)들의 목차를 컴파일러에게 미리 알려주는 선언부입니다.
 void set_color(int code);
@@ -53,17 +53,17 @@ int calculate_visual_length(const char* str);
 void get_content_stats(const char* str, int* visual_prefix, int* visual_content);
 
 // 게임 전체에서 공유하며 사용할 전역 변수들입니다.
-int menu = 1;                   // 메인 화면에서 현재 화살표가 가리키고 있는 메뉴의 번호입니다.
-int isRunning = 1;              // 이 값이 1인 동안은 프로그램이 계속 켜져 있고, 0이 되면 꺼집니다.
-char playerName[50] = "Player"; // 플레이어의 이름을 실시간 보관하고 UI에 매핑할 닉네임 전역 변수입니다.
+int menu = 1;
+int isRunning = 1;
+char playerName[50] = "Player";
 
-// 30줄에 달하는 초대형 아스키아트를 담을 수 있도록 art 배열 크기를 확장했습니다.
+// 게임 중 매 라운드마다 무작위로 나올 '선택지 정보'를 하나로 묶어둔 구조체 양식입니다.
 typedef struct
 {
-    const char* art[30];
-    const char* text;
-    int min_damage;
-    int max_damage;
+    const char* art[6]; // 선택지 위에 그려질 아스키아트 그림 데이터입니다. (최대 6줄까지 저장)
+    const char* text;   // 선택지에 대한 설명 글자입니다. 
+    int min_damage;     // 이 행동을 골랐을 때 최소한으로 받는 피해 체력량입니다. 
+    int max_damage;     // 이 행동을 골랐을 때 최대한으로 받는 피해 체력량입니다. 
 } Choice;
 
 // 게임에 등장하게 될 기상천외한 선택지들의 실제 데이터들을 모아놓은 배열입니다.
@@ -75,46 +75,38 @@ Choice choices[] =
     { {"   \\|/   ", "  - O -  ", "   /|\\   ", "         ", "         ", "         "}, "태양을 맨눈으로 10초 동안 바라본다.", 8, 12 },
     { {"  [___]  ", "  |   |  ", "  |___|  ", "         ", "         ", "         "}, "유통기한이 3년 지난 통조림을 먹는다.", 5, 15 },
     { {"  _||_   ", " |    |  ", " |    |  ", " |    |  ", " |____|  ", "         "}, "%d층에서 떨어졌다.", 2, 10 },
-    { { "                                                   " }, "%d의 속도로 달리는 차에 치인다.", 20, 50 },
-    // 30줄짜리 대형 캡슐 아스키 아트 적용 완료
-    { {
-        "        %.............................%%       ",
-        "        %                             %%       ",
-        "        %                             %%       ",
-        "        %                             %%       ",
-        "      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%     ",
-        "   %%+====================================%%%  ",
-        "  %*========================================%% ",
-        " %%==========================================% ",
-        " %%==========================================% ",
-        " %%==========================================% ",
-        " %%==========================================% ",
-        " %%..........................................% ",
-        " %%                                          % ",
-        " %%                  =====:                  % ",
-        " %%                  =====:                  % ",
-        " %%             :==============              % ",
-        " %%             :==============              % ",
-        " %%             :==============              % ",
-        " %%                  =====:                  % ",
-        " %%                  =====:                  % ",
-        " %%                                          % ",
-        " %%******************************************% ",
-        " %%==========================================% ",
-        " %%==========================================% ",
-        " %%==========================================% ",
-        " %%==========================================% ",
-        "  %#========================================%% ",
-        "   %%#===================================+%%   ",
-        "      %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%      ",
-        "                                               "
-    }, "약국에서 진통제를 복용한다.", -15, -10 },
+    // 차에 치인다 아스키아트는 너무 커서 구조체 대신 아래의 전역 배열(car_art)을 사용합니다. 빈칸으로 둡니다.
+    { { "                                                     " }, "%d의 속도로 달리는 차에 치인다.", 20, 50 },
+    { { "   +++   ", "  +HP+  ", "   +++   ", "         ", "         ", "         " }, "약국에서 진통제를 복용한다.", -15, -10 },
     { { "  [###]  ", "  |   |  ", "  |___|  ", "         ", "         ", "         " }, "편의점에서 이온음료를 마신다.", -8, -3 },
     { { "  Zzz..  ", "  (-_-)  ", "  /| |\\  ", "         ", "         ", "         " }, "잠깐 앉아서 휴식을 취한다.", -8, -4 }
 };
 
 int num_choices = sizeof(choices) / sizeof(Choice);
-CHAR_INFO savedScreen[SCREEN_WIDTH * SCREEN_HEIGHT]; // 일시정지 창을 띄울 때 사용할 스크린 백업 데이터
+
+// [추가됨] 차에 치인다 선택지가 나왔을 때 화면에 출력될 거대 자동차 아스키아트 배열
+const char* car_art[] = {
+    "                                                                                  ",
+    "                                                                                  ",
+    "                                                                                  ",
+    "                                                                 ----             ",
+    "                                                                ------            ",
+    "               **************#                                   ----             ",
+    "            ***++++++**+++++++**                              ----------          ",
+    "           ***+++++++**++++++++**                            -- ------ --         ",
+    "           ***++++++++*++++++++**                            -- ------ --         ",
+    "           **#++++++++*++++++++**                            -- ------ --         ",
+    "       #******************************                       -- ------ --         ",
+    "      *********************************                       - ------ -          ",
+    "     ***********************************                        -- ---            ",
+    "     ******%@@%***************@@@@#*****                        -- ---            ",
+    "     ****%@%  @@#************@@  *@%****                        -- ---            ",
+    "         @@=  @@@            @@  #@@                            -- ---            ",
+    "          @@@@@               @@@@                              --  --            "
+};
+int car_art_lines = 17; // 자동차 아스키아트의 총 줄 수
+
+CHAR_INFO savedScreen[SCREEN_WIDTH * SCREEN_HEIGHT];
 
 void save_console_screen()
 {
@@ -199,7 +191,10 @@ void ShowLogo(void)
     {
         printf("\x1b[%d;%dH", box_start_y + i, box_start_x);
         printf("\x1b[44m");
-        for (int j = 0; j < box_width; j++) { printf(" "); }
+        for (int j = 0; j < box_width; j++)
+        {
+            printf(" ");
+        }
         printf("\x1b[0m");
     }
 
@@ -223,12 +218,13 @@ void ShowLogo(void)
        "                                       WW WWBB      ",
        "                                          WWBB      ",
        "                                          WWBB      ",
-       "                                        WWWWWWWWBB  ",
-       "                                         BBBBBB     "
+       "                                      WWWWWWWWBB    ",
+       "                                       BBBBBB       "
     };
 
     int logo_height = 21;
     int logo_width = 52;
+
     int logo_start_x = box_start_x + (box_width - logo_width) / 2;
     int logo_start_y = box_start_y + (box_height - logo_height) / 2;
 
@@ -237,20 +233,33 @@ void ShowLogo(void)
         printf("\x1b[%d;%dH", logo_start_y + i, logo_start_x);
         for (int j = 0; j < logo_width; j++)
         {
-            if (logo[i][j] == 'W') { printf("\x1b[47m "); }
-            else if (logo[i][j] == 'B' || logo[i][j] == 'X') { printf("\x1b[40m "); }
-            else { printf("\x1b[44m "); }
+            if (logo[i][j] == 'W')
+            {
+                printf("\x1b[47m ");
+            }
+            else if (logo[i][j] == 'B' || logo[i][j] == 'X')
+            {
+                printf("\x1b[40m ");
+            }
+            else
+            {
+                printf("\x1b[44m ");
+            }
         }
         printf("\x1b[0m");
     }
 
     printf("\x1b[%d;1H\n", box_start_y + box_height + 1);
+
     move_cursor(logo_start_x - 5, logo_start_y + logo_height + 2);
     set_color(FONT_COLOR_WHITE);
     printf(" F11키를 눌러 전체화면으로 바꾸고 Enter키를 누르면 시작합니다.");
 
     int key;
-    do { key = _getch(); } while (key != '\r');
+    do {
+        key = _getch();
+    } while (key != '\r');
+
     system("cls");
 }
 
@@ -326,10 +335,18 @@ int RenderTitle(void)
 
     switch (a)
     {
-    case 72: if (menu > 1) menu--; break;
-    case 80: if (menu < 4) menu++; break;
-    case 27: isRunning = 0; break;
-    case 13: if (menu >= 1 && menu <= 4) return menu; break;
+    case 72:
+        if (menu > 1) menu--;
+        break;
+    case 80:
+        if (menu < 4) menu++;
+        break;
+    case 27:
+        isRunning = 0;
+        break;
+    case 13:
+        if (menu >= 1 && menu <= 4) return menu;
+        break;
     }
 
     return 0;
@@ -442,19 +459,38 @@ int People(void)
 
     while (1)
     {
-        if (current_page < 4) { print_member_page(filenames[current_page], descriptions[current_page]); }
-        else if (current_page == 4) { draw_final_screen(); }
+        if (current_page < 4) {
+            print_member_page(filenames[current_page], descriptions[current_page]);
+        }
+        else if (current_page == 4) {
+            draw_final_screen();
+        }
 
         int ch = _getch();
 
         if (ch == 224 || ch == 0) {
             ch = _getch();
-            if (ch == 75) { if (current_page > 0) { current_page--; } }
-            else if (ch == 77) { if (current_page < total_pages - 1) { current_page++; } }
+
+            if (ch == 75) {
+                if (current_page > 0) {
+                    current_page--;
+                }
+            }
+            else if (ch == 77) {
+                if (current_page < total_pages - 1) {
+                    current_page++;
+                }
+            }
         }
-        else if (ch == 8) { system("cls"); return 0; }
-        else if (ch == 27) { exit(0); }
+        else if (ch == 8) {
+            system("cls");
+            return 0;
+        }
+        else if (ch == 27) {
+            exit(0);
+        }
     }
+
     return 0;
 }
 
@@ -467,26 +503,40 @@ int Manual(void)
     while (key != 8)
     {
         system("cls");
+
         if (Manual_page == 1)
         {
-            move_cursor(106, 26); printf("\033[1m다음장 (→)\033[0m");
-            set_color(BG_COLOR_BRIGHTMAGENTA); set_color(FONT_COLOR_WHITE);
-            move_cursor(45, 4); printf("=========== 설명서 ===========");
+            move_cursor(106, 26);
+            printf("\033[1m다음장 (→)\033[0m");
+
+            set_color(BG_COLOR_BRIGHTMAGENTA);
+            set_color(FONT_COLOR_WHITE);
+            move_cursor(45, 4);
+            printf("=========== 설명서 ===========");
+
             set_color(BG_COLOR_BLACK);
-            set_color(FONT_COLOR_YELLOW); move_cursor(40, 8); printf("게임 제목 : 이걸 죽네");
+
+            set_color(FONT_COLOR_YELLOW);
+            move_cursor(40, 8); printf("게임 제목 : 이걸 죽네");
+
             set_color(FONT_COLOR_RED); move_cursor(40, 11); printf("HP");
             set_color(FONT_COLOR_WHITE); printf("가 0 이하가 되기 전까지 최대한 많은 턴을 버티는 게임입니다.");
+
             move_cursor(40, 13); printf("매 턴마다 2개 또는 3개의 선택지가 나옵니다.");
             move_cursor(40, 14); printf("선택지 안의 숫자는 무작위로 정해집니다.");
             move_cursor(40, 15); printf("선택한 행동에 따라 ");
+
             set_color(FONT_COLOR_RED); printf("HP"); set_color(FONT_COLOR_WHITE); printf("가 다르게 감소합니다.");
+
             set_color(FONT_COLOR_YELLOW); move_cursor(40, 18); printf("Backspace");
             set_color(FONT_COLOR_WHITE); printf("를 눌러 메뉴로 돌아가시오");
         }
+
         if (Manual_page == 2)
         {
             move_cursor(5, 26); printf("\033[1m이전장 (←)\033[0m");
             move_cursor(98, 26); printf("\033[1m나가기 (Backspace)\033[0m");
+
             move_cursor(55, 4); printf("\033[1m키 설명\033[0m");
             move_cursor(48, 9);  printf("↑: 위로 이동");
             move_cursor(48, 10); printf("↓: 밑으로 이동");
@@ -496,15 +546,25 @@ int Manual(void)
             move_cursor(48, 14); printf("ESC : 게임 종료");
             move_cursor(48, 15); printf("Backspace : 뒤로 가기");
         }
+
         key = _getch();
+
         switch (key)
         {
-        case 75: if (Manual_page > 1) { Manual_page = Manual_page - 1; } break;
-        case 77: if (Manual_page < 2) { Manual_page = Manual_page + 1; } break;
-        case 27: exit(0); break;
+        case 75:
+            if (Manual_page > 1) { Manual_page = Manual_page - 1; }
+            break;
+        case 77:
+            if (Manual_page < 2) { Manual_page = Manual_page + 1; }
+            break;
+        case 27:
+            exit(0);
+            break;
         }
     }
-    system("cls"); return 0;
+
+    system("cls");
+    return 0;
 }
 
 int Gamestart(void)
@@ -523,13 +583,15 @@ int Gamestart(void)
             gotoxy(start_x, current_y); printf("%s", buffer); current_y++;
         }
         fclose(fp);
+
         gotoxy(start_x, current_y + 2);
         printf("아무 키나 누르면 게임이 시작됩니다..."); _getch();
     }
-    else { gotoxy(start_x, current_y); printf("오류: ta.txt 파일을 찾을 수 없습니다.\n"); Sleep(2000); }
+    else {
+        gotoxy(start_x, current_y); printf("오류: ta.txt 파일을 찾을 수 없습니다.\n"); Sleep(2000);
+    }
 
-    // 거대한 아스키아트를 표시하기 위해 세로 크기를 50으로 넓힙니다.
-    system("mode con cols=120 lines=50");
+    system("mode con cols=120 lines=30");
     system("cls");
 
     srand((unsigned int)time(NULL));
@@ -544,7 +606,9 @@ int Gamestart(void)
 
         int left_idx = rand() % num_choices;
         int right_idx;
-        do { right_idx = rand() % num_choices; } while (left_idx == right_idx);
+        do {
+            right_idx = rand() % num_choices;
+        } while (left_idx == right_idx);
 
         int left_n = 0, right_n = 0;
         if (strstr(choices[left_idx].text, "%d") != NULL) {
@@ -554,13 +618,13 @@ int Gamestart(void)
             right_n = (rand() % (choices[right_idx].max_damage - choices[right_idx].min_damage + 1)) + choices[right_idx].min_damage;
         }
 
-        set_color(FONT_COLOR_GREEN); move_cursor(15, 2); printf("Player : %s", playerName);
-        set_color(FONT_COLOR_RED); move_cursor(45, 2); printf("HP : %d", hp);
-        set_color(FONT_COLOR_WHITE); move_cursor(75, 2); printf("SCORE : %d", score);
+        int center_x = 100;
+        int left_center = center_x - 35;  // 65
+        int right_center = center_x + 35; // 135
 
-        // 화면이 넓어졌으므로 VS 좌표를 아래로 조정합니다.
-        set_color(FONT_COLOR_YELLOW); move_cursor(58, 22); printf("VS");
-        set_color(FONT_COLOR_WHITE);
+        set_color(FONT_COLOR_GREEN); move_cursor(55, 2); printf("Player : %s", playerName);
+        set_color(FONT_COLOR_RED); move_cursor(85, 2); printf("HP : %d", hp);
+        set_color(FONT_COLOR_WHITE); move_cursor(125, 2); printf("SCORE : %d", score);
 
         char left_msg[256], right_msg[256];
         if (strstr(choices[left_idx].text, "%d") != NULL) sprintf(left_msg, choices[left_idx].text, left_n);
@@ -570,31 +634,53 @@ int Gamestart(void)
 
         int left_msg_len = calculate_visual_length(left_msg);
         int right_msg_len = calculate_visual_length(right_msg);
+        int left_x = left_center - (left_msg_len / 2);
+        int right_x = right_center - (right_msg_len / 2);
 
-        // 화면 분할 좌표를 넓어진 레이아웃에 맞춰 조정합니다.
-        int left_x = 32 - (left_msg_len / 2);   if (left_x < 2) left_x = 2;
-        int right_x = 87 - (right_msg_len / 2); if (right_x < 50) right_x = 50;
-
+        set_color(FONT_COLOR_YELLOW); move_cursor(center_x - 1, 12); printf("VS");
         set_color(FONT_COLOR_WHITE);
-        // 최대 30줄까지 그림 렌더링 루프 (비어있으면 무시)
-        for (int i = 0; i < 30; i++) {
-            if (choices[left_idx].art[i] != NULL) {
-                move_cursor(10, 6 + i);
-                printf("%s", choices[left_idx].art[i]);
+
+        // 차 그림이 크기 때문에 설명 글자가 겹치지 않도록 기존 Y좌표 18에서 23으로 내립니다.
+        int text_y = 23;
+
+        // [수정됨] 파일 읽기 대신 배열(car_art)을 사용해 왼쪽 아스키아트 출력
+        if (strstr(choices[left_idx].text, "차에 치인다") != NULL) {
+            for (int i = 0; i < car_art_lines; i++) {
+                move_cursor(left_center - 35, 1 + i);
+                printf("%s", car_art[i]);
             }
         }
-        move_cursor(left_x, 38); printf("%s", left_msg); // 그림 밑으로 자막 내림
-
-        for (int i = 0; i < 30; i++) {
-            if (choices[right_idx].art[i] != NULL) {
-                move_cursor(65, 6 + i);
-                printf("%s", choices[right_idx].art[i]);
+        else {
+            for (int i = 0; i < 6; i++) {
+                if (choices[left_idx].art[i] != NULL) {
+                    move_cursor(left_center - 4, 8 + i);
+                    printf("%s", choices[left_idx].art[i]);
+                }
             }
         }
-        move_cursor(right_x, 38); printf("%s", right_msg); // 자막 내림
+        move_cursor(left_x, text_y); printf("%s", left_msg);
 
-        // 안내문도 화면 맨 밑으로 내립니다.
-        set_color(FONT_COLOR_GREEN); move_cursor(35, 42); printf("방향키(←, →)로 선택하세요. (메뉴로 가기: Backspace)");
+        // [수정됨] 파일 읽기 대신 배열(car_art)을 사용해 오른쪽 아스키아트 출력
+        if (strstr(choices[right_idx].text, "차에 치인다") != NULL) {
+            for (int i = 0; i < car_art_lines; i++) {
+                move_cursor(right_center - 35, 1 + i);
+                printf("%s", car_art[i]);
+            }
+        }
+        else {
+            for (int i = 0; i < 6; i++) {
+                if (choices[right_idx].art[i] != NULL) {
+                    move_cursor(right_center - 4, 8 + i);
+                    printf("%s", choices[right_idx].art[i]);
+                }
+            }
+        }
+        move_cursor(right_x, text_y); printf("%s", right_msg);
+
+        const char* help_msg = "방향키(←, →)로 선택하세요. (메뉴로 가기: Backspace)";
+        int help_msg_len = calculate_visual_length(help_msg);
+        int help_x = center_x - (help_msg_len / 2);
+        set_color(FONT_COLOR_GREEN); move_cursor(help_x, 25); printf("%s", help_msg);
         set_color(FONT_COLOR_WHITE);
 
         int has_selected = 0;
@@ -607,33 +693,57 @@ int Gamestart(void)
             if (key == 224)
             {
                 key = _getch();
-                if (key == 75) { selected_idx = left_idx; has_selected = 1; }
-                else if (key == 77) { selected_idx = right_idx; has_selected = 1; }
+                if (key == 75)
+                {
+                    selected_idx = left_idx;
+                    has_selected = 1;
+                }
+                else if (key == 77)
+                {
+                    selected_idx = right_idx;
+                    has_selected = 1;
+                }
             }
             else if (key == 8)
             {
                 save_console_screen();
+
                 while (1)
                 {
-                    set_color(BG_COLOR_BLACK); move_cursor(20, 15); // 일시정지 창 위치 조정
-                    printf("                                                                                                                        \n                                                                                                                        \n                                                                                                                        \n                                                                                                                        \n                                                                                                                        \n                                                                                                                        \n                                                                                                                        \n");
-                    set_color(FONT_COLOR_RED); move_cursor(50, 20); printf("게임을 중지하시겠습니까?");
-                    move_cursor(40, 23); printf("게임을 계속하려면 t, 중지하려면 r를 누르시오.");
+                    set_color(BG_COLOR_BLACK); move_cursor(20 + 40, 7);
+                    printf("                                                                                                                                                                                                                                                                                        \n                                                                                                                                                                                                                                                                                        \n                                                                                                                                                                                                                                                                                        \n                                                                                                                                                                                                                                                                                        \n                                                                                                                                                                                                                                                                                        \n                                                                                                                                                                                                                                                                                        \n                                                                                                                                                                                                                                                                                        \n");
+
+                    set_color(FONT_COLOR_RED); move_cursor(center_x - 12, 12); printf("게임을 중지하시겠습니까?");
+                    move_cursor(center_x - 22, 15); printf("게임을 계속하려면 t, 중지하려면 r를 누르시오.");
 
                     key = _getch();
-                    if (key == 'r') { system("cls"); return 0; }
-                    if (key == 't') { restore_console_screen(); break; }
+
+                    if (key == 'r')
+                    {
+                        system("cls");
+                        return 0;
+                    }
+                    if (key == 't')
+                    {
+                        restore_console_screen();
+                        break;
+                    }
                 }
             }
             else if (key == 27) { exit(0); }
         }
 
         int damage = 0;
-        if (strstr(choices[selected_idx].text, "층에서 떨어졌다") != NULL) {
-            int n = (selected_idx == left_idx) ? left_n : right_n; damage = n * 4;
+
+        if (strstr(choices[selected_idx].text, "층에서 떨어졌다") != NULL)
+        {
+            int n = (selected_idx == left_idx) ? left_n : right_n;
+            damage = n * 4;
         }
-        else if (strstr(choices[selected_idx].text, "속도") != NULL) {
-            int n = (selected_idx == left_idx) ? left_n : right_n; damage = n * 2;
+        else if (strstr(choices[selected_idx].text, "속도") != NULL)
+        {
+            int n = (selected_idx == left_idx) ? left_n : right_n;
+            damage = n * 2;
         }
         else {
             int min = choices[selected_idx].min_damage;
@@ -642,75 +752,167 @@ int Gamestart(void)
         }
 
         hp -= damage;
-        if (hp > 100) { hp = 100; }
+
+        if (hp > 100)
+        {
+            hp = 100;
+        }
+
+        if (strstr(choices[selected_idx].text, "귀여운 길고양이를 쓰다듬는다.") != NULL)
+        {
+            PlaySound(TEXT("angry_cat.wav"), NULL, SND_FILENAME | SND_ASYNC);
+        }
+
+        if (strstr(choices[selected_idx].text, "수상할 정도로 빨간 버튼을 누른다.") != NULL)
+        {
+            PlaySound(TEXT("boom.wav"), NULL, SND_FILENAME | SND_ASYNC);
+        }
+
+        if (strstr(choices[selected_idx].text, "태양을 맨눈으로 10초 동안 바라본다.") != NULL)
+        {
+            PlaySound(TEXT("myeye!.wav"), NULL, SND_FILENAME | SND_ASYNC);
+        }
+
         score += 1;
 
         system("cls");
-        move_cursor(50, 22); // 데미지 결과 리포트 위치 조정
-        if (damage < 0) { printf("선택 완료! HP가 %d 회복되었습니다.", -damage); }
-        else { printf("선택 완료! HP가 %d 감소했습니다.", damage); }
+
+        char result_msg[128];
+        if (damage < 0)
+        {
+            sprintf(result_msg, "선택 완료! HP가 %d 회복되었습니다.", -damage);
+        }
+        else
+        {
+            sprintf(result_msg, "선택 완료! HP가 %d 감소했습니다.", damage);
+        }
+
+        int res_len = calculate_visual_length(result_msg);
+        int res_x = center_x - (res_len / 2);
+
+        move_cursor(res_x, 12);
+        printf("%s", result_msg);
 
         Sleep(2000);
-        while (_kbhit()) { _getch(); }
+
+        while (_kbhit())
+        {
+            _getch();
+        }
     }
 
     system("cls");
-    set_color(FONT_COLOR_RED); move_cursor(54, 22); printf("GAME OVER"); // 오버 멘트 위치 내림
-    set_color(FONT_COLOR_WHITE); move_cursor(50, 24); printf("최종 버틴 점수 : %d", score);
-    move_cursor(43, 28); printf("Backspace를 누르면 메뉴로 돌아갑니다.");
+    set_color(FONT_COLOR_RED); move_cursor(95, 12); printf("GAME OVER");
 
-    while (1) { key = _getch(); if (key == 8) { break; } }
-    system("cls"); return 0;
+    set_color(FONT_COLOR_WHITE); move_cursor(90, 14); printf("최종 버틴 점수 : %d", score);
+    move_cursor(83, 18); printf("Backspace를 누르면 메뉴로 돌아갑니다.");
+
+    while (1)
+    {
+        key = _getch();
+        if (key == 8)
+        {
+            break;
+        }
+    }
+
+    system("cls");
+    return 0;
 }
 
 int Gameover(void)
 {
-    // 화면 높이가 50이 되었으므로 엔딩 멘트도 맨 아래(50)부터 솟아오르게 합니다.
-    int y = 50;
-    int yy = 50;
-    int While = 1;
-    int Thile = 1;
+    const char* credits[] = {
+        "======================================",
+        "              GAME OVER               ",
+        "======================================",
+        "",
+        "       플레이 해주셔서 감사합니다!     ",
+        "",
+        "--------------------------------------",
+        "          [ PLAYER SCORE ]            ",
+        "",
+        "          플레이어: %s",
+        "          최종 점수: 100 점",
+        "--------------------------------------",
+        "",
+        "           [ DEVELOPERS ]             ",
+        "",
+        "        team 01 (ZERONE) 팀원들       ",
+        "",
+        "        마준서 (202617166) : 총괄     ",
+        "        백종화 (202617139) : 코드     ",
+        "        이인욱 (202619389) : 코드     ",
+        "        이준현 (202619549) : 디자인   ",
+        "",
+        "======================================",
+        "      잠시 후 게임이 종료됩니다.      ",
+        "====================================--"
+    };
 
+    int num_lines = sizeof(credits) / sizeof(credits[0]);
+
+    for (int i = SCREEN_HEIGHT; i >= -num_lines; i--)
+    {
+        printf("\x1b[2J\x1b[H");
+        set_color(FONT_COLOR_WHITE);
+
+        for (int j = 0; j < num_lines; j++)
+        {
+            int line_y = i + j;
+
+            if (line_y >= 0 && line_y < SCREEN_HEIGHT)
+            {
+                int visual_len = calculate_visual_length(credits[j]);
+                int line_x = ((SCREEN_WIDTH - visual_len) / 2) + 40;
+                if (line_x < 1) line_x = 1;
+
+                move_cursor(line_x, line_y);
+
+                if (j == 9)
+                {
+                    char formatted_line[256];
+                    sprintf(formatted_line, credits[j], playerName);
+                    printf("%s", formatted_line);
+                }
+                else
+                {
+                    printf("%s", credits[j]);
+                }
+            }
+        }
+
+        move_cursor(SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1);
+        Sleep(150);
+    }
+
+    Sleep(2000);
     system("cls");
-
-    while (While)
-    {
-        if (y != 1)
-        {
-            system("cls");
-            move_cursor(42, y); printf("여기에 마무리 되는거 추가로 넣고 꺼지게 하기");
-            y--;
-            Sleep(100);
-            if (y == 1) { While = 0; }
-        }
-    }
-
-    while (Thile)
-    {
-        if (yy != 3)
-        {
-            system("cls");
-            move_cursor(42, y); printf("여기에 마무리 되는거 추가로 넣고 꺼지게 하기");
-            move_cursor(42, yy); printf("여기에 마무리 되는거 추가로 넣고 꺼지게 하기");
-            yy--;
-            Sleep(100);
-            if (yy == 3) { Thile = 0; }
-        }
-    }
-
-    Sleep(10000);
     exit(0);
+
+    return 0;
 }
 
-void set_color(int code) { printf("\x1b[%dm", code); }
-int move_cursor(int x, int y) { printf("\033[%d;%dH", y, x); return 0; }
-void cleanup_console(void) { printf("\x1b[?1049l\x1b[0m"); }
+void set_color(int code)
+{
+    printf("\x1b[%dm", code);
+}
+
+int move_cursor(int x, int y)
+{
+    printf("\033[%d;%dH", y, x);
+    return 0;
+}
+
+void cleanup_console(void) {
+    printf("\x1b[?1049l\x1b[0m");
+}
 
 int main(void)
 {
     printf("\x1b[2J\x1b[?1049h");
     SetConsoleOutputCP(CP_UTF8);
-    SetConsoleCP(CP_UTF8);        // 한글 닉네임 입력을 깨짐 없이 받기 위한 설정 추가!
+    SetConsoleCP(CP_UTF8);
     atexit(cleanup_console);
 
     int gameStatus = 0;
@@ -732,27 +934,39 @@ int main(void)
         switch (gameStatus)
         {
         case 0:
+
             if (!isBgmPlaying) {
                 PlaySound(TEXT("il-vento-doro.wav"), NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
                 isBgmPlaying = 1;
             }
+
             printf("\x1b[H");
             gameStatus = RenderTitle();
             break;
 
-        case 1: gameStatus = People(); break;
-        case 2: gameStatus = Manual(); break;
+        case 1:
+            gameStatus = People();
+            break;
+
+        case 2:
+            gameStatus = Manual();
+            break;
+
         case 3:
             PlaySound(NULL, NULL, 0);
             isBgmPlaying = 0;
+
             gameStatus = Gamestart();
             break;
 
-        case 4: gameStatus = Gameover(); break;
+        case 4:
+            gameStatus = Gameover();
+            break;
         }
     }
 
     system("cls");
-    move_cursor(0, 48);
+    move_cursor(0, 25);
+
     return 0;
 }
