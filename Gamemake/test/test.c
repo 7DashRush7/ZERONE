@@ -918,6 +918,65 @@ int Gamestart(void)
             }
         }
 
+        if (strstr(choices[selected_idx].text, "%d의 속도로 달리는 차에 치인다.") != NULL)
+        {
+            // 효과음 재생
+            PlaySound(TEXT("car.wav"), NULL, SND_FILENAME | SND_ASYNC);
+            // 효과음이 대략 2초라고 가정
+           // 다시 BGM 루프 재생
+           // (현재 재생 중이던 BGM 파일명을 다시 넣어줍니다)
+            if (random_bgm == 0)
+            {
+                Sleep(4000);
+                PlaySound(TEXT("White Hats - Wayne Jones_[cut_99sec].wav"), NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
+            }
+            else {
+                Sleep(4000);
+                PlaySound(TEXT("Propellerheads - Spybreak!_[cut_240sec].wav"), NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
+            }
+
+        }
+
+        if (strstr(choices[selected_idx].text, "자판기에서 뽑은 제로 슈거 콜라를 시원하게 들이킨다.") != NULL)
+        {
+            // 효과음 재생
+            PlaySound(TEXT("Drinking.wav"), NULL, SND_FILENAME | SND_ASYNC);
+            // 효과음이 대략 2초라고 가정
+           // 다시 BGM 루프 재생
+           // (현재 재생 중이던 BGM 파일명을 다시 넣어줍니다)
+            if (random_bgm == 0)
+            {
+                Sleep(3000);
+                PlaySound(TEXT("White Hats - Wayne Jones_[cut_99sec].wav"), NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
+            }
+            else {
+                Sleep(3000);
+                PlaySound(TEXT("Propellerheads - Spybreak!_[cut_240sec].wav"), NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
+            }
+
+        }
+
+        if (strstr(choices[selected_idx].text, "편의점에서 이온음료를 마신다.") != NULL)
+        {
+            // 효과음 재생
+            PlaySound(TEXT("Drinking.wav"), NULL, SND_FILENAME | SND_ASYNC);
+            // 효과음이 대략 2초라고 가정
+           // 다시 BGM 루프 재생
+           // (현재 재생 중이던 BGM 파일명을 다시 넣어줍니다)
+            if (random_bgm == 0)
+            {
+                Sleep(3000);
+                PlaySound(TEXT("White Hats - Wayne Jones_[cut_99sec].wav"), NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
+            }
+            else {
+                Sleep(3000);
+                PlaySound(TEXT("Propellerheads - Spybreak!_[cut_240sec].wav"), NULL, SND_FILENAME | SND_ASYNC | SND_LOOP);
+            }
+
+        }
+
+        
+
         score += 1;
         finalScore = score;
 

@@ -39,9 +39,9 @@ C:\Users\zoar0\source\repos\ZERONE\Gamemake\test\test.c(827,70): warning C4819: 
 C:\Users\zoar0\source\repos\ZERONE\Gamemake\test\test.c(828,74): warning C4819: 현재 코드 페이지(0)에서 표시할 수 없는 문자가 파일에 들어 있습니다. 데이터가 손실되지 않게 하려면 해당 파일을 유니코드 형식으로 저장하십시오.
 C:\Users\zoar0\source\repos\ZERONE\Gamemake\test\test.c(829,54): warning C4819: 현재 코드 페이지(0)에서 표시할 수 없는 문자가 파일에 들어 있습니다. 데이터가 손실되지 않게 하려면 해당 파일을 유니코드 형식으로 저장하십시오.
 C:\Users\zoar0\source\repos\ZERONE\Gamemake\test\test.c(856,128): warning C4819: 현재 코드 페이지(0)에서 표시할 수 없는 문자가 파일에 들어 있습니다. 데이터가 손실되지 않게 하려면 해당 파일을 유니코드 형식으로 저장하십시오.
-C:\Users\zoar0\source\repos\ZERONE\Gamemake\test\test.c(929,90): warning C4819: 현재 코드 페이지(0)에서 표시할 수 없는 문자가 파일에 들어 있습니다. 데이터가 손실되지 않게 하려면 해당 파일을 유니코드 형식으로 저장하십시오.
-C:\Users\zoar0\source\repos\ZERONE\Gamemake\test\test.c(933,86): warning C4819: 현재 코드 페이지(0)에서 표시할 수 없는 문자가 파일에 들어 있습니다. 데이터가 손실되지 않게 하려면 해당 파일을 유니코드 형식으로 저장하십시오.
-C:\Users\zoar0\source\repos\ZERONE\Gamemake\test\test.c(955,96): warning C4819: 현재 코드 페이지(0)에서 표시할 수 없는 문자가 파일에 들어 있습니다. 데이터가 손실되지 않게 하려면 해당 파일을 유니코드 형식으로 저장하십시오.
-C:\Users\zoar0\source\repos\ZERONE\Gamemake\test\test.c(956,84): warning C4819: 현재 코드 페이지(0)에서 표시할 수 없는 문자가 파일에 들어 있습니다. 데이터가 손실되지 않게 하려면 해당 파일을 유니코드 형식으로 저장하십시오.
-C:\Users\zoar0\source\repos\ZERONE\Gamemake\test\test.c(1079,60): warning C4819: 현재 코드 페이지(0)에서 표시할 수 없는 문자가 파일에 들어 있습니다. 데이터가 손실되지 않게 하려면 해당 파일을 유니코드 형식으로 저장하십시오.
+C:\Users\zoar0\source\repos\ZERONE\Gamemake\test\test.c(988,90): warning C4819: 현재 코드 페이지(0)에서 표시할 수 없는 문자가 파일에 들어 있습니다. 데이터가 손실되지 않게 하려면 해당 파일을 유니코드 형식으로 저장하십시오.
+C:\Users\zoar0\source\repos\ZERONE\Gamemake\test\test.c(992,86): warning C4819: 현재 코드 페이지(0)에서 표시할 수 없는 문자가 파일에 들어 있습니다. 데이터가 손실되지 않게 하려면 해당 파일을 유니코드 형식으로 저장하십시오.
+C:\Users\zoar0\source\repos\ZERONE\Gamemake\test\test.c(1014,96): warning C4819: 현재 코드 페이지(0)에서 표시할 수 없는 문자가 파일에 들어 있습니다. 데이터가 손실되지 않게 하려면 해당 파일을 유니코드 형식으로 저장하십시오.
+C:\Users\zoar0\source\repos\ZERONE\Gamemake\test\test.c(1015,84): warning C4819: 현재 코드 페이지(0)에서 표시할 수 없는 문자가 파일에 들어 있습니다. 데이터가 손실되지 않게 하려면 해당 파일을 유니코드 형식으로 저장하십시오.
+C:\Users\zoar0\source\repos\ZERONE\Gamemake\test\test.c(1138,60): warning C4819: 현재 코드 페이지(0)에서 표시할 수 없는 문자가 파일에 들어 있습니다. 데이터가 손실되지 않게 하려면 해당 파일을 유니코드 형식으로 저장하십시오.
   test.vcxproj -> C:\Users\zoar0\source\repos\ZERONE\Gamemake\x64\Debug\test.exe
