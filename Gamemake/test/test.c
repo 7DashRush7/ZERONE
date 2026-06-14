@@ -284,6 +284,28 @@ void ShowLogo(void)
 
 int RenderTitle(void)
 {
+    int console_width = 210;
+    int console_height = 60;
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+
+    if (GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi))
+    {
+        console_width = csbi.srWindow.Right - csbi.srWindow.Left + 1;
+        console_height = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
+
+        if (console_width < 180 || console_height < 50)
+        {
+            system("mode con cols=210 lines=60");
+            if (GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi))
+            {
+                console_width = csbi.srWindow.Right - csbi.srWindow.Left + 1;
+                console_height = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
+            }
+        }
+    }
+
+    printf("\x1b[2J\x1b[H");
+
     static char title_lines[40][256];
     static int title_line_count = 0;
     static int max_content_width = 0;
@@ -343,14 +365,23 @@ int RenderTitle(void)
     else { set_color(FONT_COLOR_WHITE);            printf("   4. 게임 종료"); }
 
     set_color(FONT_COLOR_YELLOW);
-    move_cursor(190, 45); printf("↑: 위로 이동");
-    move_cursor(190, 46); printf("↓: 밑으로 이동");
-    move_cursor(190, 47); printf("Enter : 선택");
-    move_cursor(190, 48); printf("ESC : 게임 종료");
+    int guide_x = console_width - 20;
+    int guide_y = console_height - 3;
+    if (guide_x < 1) guide_x = 1;
+    if (guide_y < 1) guide_y = 1;
+    move_cursor(guide_x, guide_y); printf("↑: 위로 이동");
+    move_cursor(guide_x, guide_y + 1); printf("↓: 밑으로 이동");
+    move_cursor(guide_x, guide_y + 2); printf("Enter : 선택");
+    move_cursor(guide_x, guide_y + 3); printf("ESC : 게임 종료");
 
-    move_cursor(106, 100);
+    move_cursor(1, 1);
 
-    char a = _getch();
+    int a = _getch();
+
+    if (a == 0 || a == 224)
+    {
+        a = _getch();
+    }
 
     switch (a)
     {
